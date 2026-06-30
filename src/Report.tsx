@@ -1,11 +1,12 @@
 import {
-  formatDateCzech,
+  formatDate,
   formatDuration,
-  formatMonthCzech,
+  formatMonth,
   formatTime,
   type DayGroup,
   type ParsedReport,
 } from './parseCsv'
+import { useI18n, type Lang } from './i18n'
 
 type Theme = 'light' | 'dark'
 type PeriodMode = 'file' | 'month'
@@ -19,6 +20,7 @@ export function Report({
   referenceNumber,
   periodMode,
   styleMode,
+  lang,
 }: {
   report: ParsedReport
   theme: Theme
@@ -27,66 +29,64 @@ export function Report({
   referenceNumber: string
   periodMode: PeriodMode
   styleMode: StyleMode
+  lang: Lang
 }) {
+  const { t } = useI18n()
   const { tasks, days, grandTotalSec, onSiteSec, remoteSec, dayCount, entryCount, rangeStart, rangeEnd } =
     report
   const isSimple = styleMode === 'simple'
 
-  // Period label based on mode
   let periodLabel = ''
   let periodHeadline = ''
   if (periodMode === 'month' && rangeStart) {
-    periodHeadline = formatMonthCzech(rangeStart)
+    periodHeadline = formatMonth(rangeStart, lang)
     if (rangeStart.getTime() === rangeEnd?.getTime()) {
-      periodLabel = formatDateCzech(rangeStart)
+      periodLabel = formatDate(rangeStart, lang)
     } else {
-      periodLabel = `${formatDateCzech(rangeStart)} — ${formatDateCzech(rangeEnd!)}`
+      periodLabel = `${formatDate(rangeStart, lang)} — ${formatDate(rangeEnd!, lang)}`
     }
   } else {
     if (rangeStart && rangeEnd) {
       periodLabel =
         rangeStart.getTime() === rangeEnd.getTime()
-          ? formatDateCzech(rangeStart)
-          : `${formatDateCzech(rangeStart)} — ${formatDateCzech(rangeEnd)}`
+          ? formatDate(rangeStart, lang)
+          : `${formatDate(rangeStart, lang)} — ${formatDate(rangeEnd, lang)}`
     }
   }
 
   const generatedAt = new Date()
-  const generatedLabel = `${formatDateCzech(generatedAt)} · ${formatTime(generatedAt)}`
+  const generatedLabel = `${formatDate(generatedAt, lang)} · ${formatTime(generatedAt)}`
 
   return (
     <div className="report" data-theme={theme} data-style={styleMode}>
       <div className="doc">
-        {/* ===== Document header (invoice-style) ===== */}
         <header className="doc-header">
           <div className="doc-header-left">
-            {referenceNumber ? (
+            {referenceNumber && (
               <div className="doc-ref-block">
                 <div className="doc-ref-label">Ref.</div>
                 <div className="doc-ref-number">{referenceNumber}</div>
                 <div className="doc-ref-line" />
               </div>
-            ) : (
-              <img src={logoUrl} alt="Logo" className="doc-logo" />
             )}
           </div>
           <div className="doc-header-center">
-            <img src={logoUrl} alt="Logo" className="doc-logo" />
+            {logoUrl && <img src={logoUrl} alt="Logo" className="doc-logo" />}
           </div>
           <div className="doc-header-right">
-            <div className="doc-title">Sestava odpracovaného času</div>
+            <div className="doc-title">{t('report.title')}</div>
             {periodHeadline && <div className="doc-period-headline">{periodHeadline}</div>}
             <div className="doc-meta">
               <div className="doc-meta-row">
-                <span className="doc-meta-k">Období</span>
+                <span className="doc-meta-k">{t('report.period')}</span>
                 <span className="doc-meta-v">{periodLabel}</span>
               </div>
               <div className="doc-meta-row">
-                <span className="doc-meta-k">Vygenerováno</span>
+                <span className="doc-meta-k">{t('report.generated')}</span>
                 <span className="doc-meta-v">{generatedLabel}</span>
               </div>
               <div className="doc-meta-row">
-                <span className="doc-meta-k">Záznamů / Dní</span>
+                <span className="doc-meta-k">{t('report.entriesDays')}</span>
                 <span className="doc-meta-v">
                   {entryCount} / {dayCount}
                 </span>
@@ -97,10 +97,9 @@ export function Report({
 
         <div className="doc-rule" />
 
-        {/* ===== Totals band ===== */}
         <section className="totals-band">
           <div className="totals-band-main">
-            <div className="totals-band-label">Celkem odpracováno</div>
+            <div className="totals-band-label">{t('report.totalWorked')}</div>
             <div className="totals-band-value">{formatDuration(grandTotalSec)}</div>
           </div>
           <div className="totals-band-split">
@@ -123,55 +122,68 @@ export function Report({
           </div>
         </section>
 
-        {/* ===== Summary by task ===== */}
-        <section className="doc-section">
-          <h2 className="section-title">Souhrn podle úkolu</h2>
-          <div className="task-totals-list">
-            {tasks.map((t) => (
-              <div className="task-total-row" key={t.task}>
-                <div className="task-total-name">{t.task}</div>
-                {!isSimple && (
-                  <div className="task-total-bar">
-                    <div
-                      className="task-total-bar-fill"
-                      style={{ width: `${(t.totalSec / grandTotalSec) * 100}%` }}
-                    />
-                  </div>
-                )}
-                <div className="task-total-time">{formatDuration(t.totalSec)}</div>
-              </div>
-            ))}
-          </div>
-        </section>
+        {report.hasTask && (
+          <section className="doc-section">
+            <h2 className="section-title">{t('report.summaryByTask')}</h2>
+            <div className="task-totals-list">
+              {tasks.map((task) => (
+                <div className="task-total-row" key={task.task}>
+                  <div className="task-total-name">{task.task}</div>
+                  {!isSimple && (
+                    <div className="task-total-bar">
+                      <div
+                        className="task-total-bar-fill"
+                        style={{ width: `${(task.totalSec / grandTotalSec) * 100}%` }}
+                      />
+                    </div>
+                  )}
+                  <div className="task-total-time">{formatDuration(task.totalSec)}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
-        {/* ===== Detailed breakdown (grouped by day, across all tasks) ===== */}
         <section className="doc-section">
-          <h2 className="section-title">Detailní přehled</h2>
+          <h2 className="section-title">{t('report.detailedBreakdown')}</h2>
           {days.map((day) => (
-            <DayBlock key={day.dateKey} day={day} simple={isSimple} />
+            <DayBlock key={day.dateKey} day={day} simple={isSimple} t={t} />
           ))}
         </section>
 
-        {/* ===== Closing: signature only (no footer) ===== */}
         <section className="doc-closing">
           <div className="signature-block">
             <div className="signature-area">
               {signatureUrl ? (
-                <img src={signatureUrl} alt="Podpis" className="signature-img" />
+                <img src={signatureUrl} alt="Signature" className="signature-img" />
               ) : (
-                <div className="signature-placeholder">[ podpis ]</div>
+                <div className="signature-placeholder">{t('report.signature')}</div>
               )}
               <div className="signature-line" />
-              <div className="signature-label">tdvorak.dev</div>
             </div>
           </div>
+          <footer className="doc-footer">
+            Tool created by TDvorak ·{' '}
+            <a href="https://github.com/Dvorinka/TimeSpent" className="doc-footer-link">
+              github.com/Dvorinka/TimeSpent
+            </a>{' '}
+            · © 2026
+          </footer>
         </section>
       </div>
     </div>
   )
 }
 
-function DayBlock({ day, simple }: { day: DayGroup; simple: boolean }) {
+function DayBlock({
+  day,
+  simple,
+  t,
+}: {
+  day: DayGroup
+  simple: boolean
+  t: ReturnType<typeof useI18n>['t']
+}) {
   return (
     <div className="day-block">
       <div className="day-head">
@@ -180,11 +192,11 @@ function DayBlock({ day, simple }: { day: DayGroup; simple: boolean }) {
       <table className="entries-table">
         <thead>
           <tr>
-            <th className="col-time">Čas</th>
-            <th className="col-task">Úkol</th>
-            <th className="col-desc">Popis</th>
-            <th className="col-tag">Tag</th>
-            <th className="col-dur">Doba</th>
+            <th className="col-time">{t('report.col.time')}</th>
+            <th className="col-task">{t('report.col.task')}</th>
+            <th className="col-desc">{t('report.col.description')}</th>
+            <th className="col-tag">{t('report.col.tag')}</th>
+            <th className="col-dur">{t('report.col.duration')}</th>
           </tr>
         </thead>
         <tbody>

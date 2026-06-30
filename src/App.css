@@ -6,6 +6,31 @@
   transition: background 0.2s, color 0.2s;
 }
 
+/* ============ Language toggle ============ */
+.lang-toggle {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 100;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-soft);
+  cursor: pointer;
+  font-family: inherit;
+  letter-spacing: 0.05em;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.lang-toggle:hover {
+  background: var(--surface-2);
+  border-color: var(--accent);
+  color: var(--text);
+}
+
 /* ============ Dropzone ============ */
 .dropzone-wrap {
   min-height: 100vh;
@@ -39,12 +64,6 @@
 .dropzone.is-over {
   border-color: var(--accent);
   transform: translateY(-2px);
-}
-
-.dropzone-logo {
-  height: 46px;
-  width: auto;
-  opacity: 0.95;
 }
 
 .dropzone h1 {
@@ -83,6 +102,21 @@
   font-size: 12px;
 }
 
+.dropzone-example {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--line-strong);
+  padding-bottom: 1px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.dropzone-example:hover {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
 .error {
   color: #ff8a8a;
   background: #2a1414;
@@ -116,13 +150,6 @@
   flex-direction: column;
   gap: 18px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-}
-
-.config-logo {
-  height: 38px;
-  width: auto;
-  align-self: center;
-  opacity: 0.9;
 }
 
 .config-card h2 {
@@ -228,6 +255,93 @@
   justify-content: flex-end;
   gap: 10px;
   margin-top: 4px;
+}
+
+/* ============ Column mapping ============ */
+.column-mapping-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.column-mapping-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.column-mapping-label {
+  flex: 0 0 100px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-soft);
+}
+
+.column-mapping-select {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--text);
+  font-family: inherit;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.column-mapping-select:focus {
+  border-color: var(--accent);
+}
+
+.column-mapping-select option {
+  background: var(--surface);
+  color: var(--text);
+}
+
+/* ============ Preview table ============ */
+.preview-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  margin-top: 4px;
+}
+
+.preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11.5px;
+  table-layout: auto;
+}
+
+.preview-table thead th {
+  text-align: left;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  font-weight: 700;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line-strong);
+  white-space: nowrap;
+  background: var(--surface);
+}
+
+.preview-table tbody td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+  color: var(--text-soft);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.preview-table tbody tr:last-child td {
+  border-bottom: none;
 }
 
 /* ============ Toolbar ============ */
@@ -839,11 +953,49 @@
   border-top: 1px solid var(--line-strong);
 }
 
-.signature-label {
-  margin-top: 6px;
-  font-size: 12px;
+/* ===== Document footer (in PDF) ===== */
+.doc-footer {
+  margin-top: 18px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 0.01em;
+}
+
+.doc-footer-link,
+.doc-footer-link:visited {
   color: var(--text-muted);
-  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px dotted var(--line-strong);
+}
+
+.doc-footer-link:hover {
+  color: var(--text);
+  border-bottom-color: var(--text-muted);
+}
+
+/* ===== App-shell footer (web UI only, no-print) ===== */
+.app-footer {
+  margin-top: 28px;
+  padding: 16px 20px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-dim);
+  border-top: 1px solid var(--line);
+}
+
+.app-footer-link,
+.app-footer-link:visited {
+  color: var(--text-muted);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--line-strong);
+}
+
+.app-footer-link:hover {
+  color: var(--text);
+  border-bottom-color: var(--text-muted);
 }
 
 /* ===== Responsive ===== */
@@ -1008,8 +1160,8 @@
   .tag-pill {
     font-size: 8pt;
   }
-  .signature-label {
-    font-size: 9pt;
+  .doc-footer {
+    font-size: 8pt;
   }
 
   /* Logo: ensure crisp raster at print resolution */

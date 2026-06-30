@@ -1,40 +1,63 @@
 # TimeSpent → PDF
 
-Přehledná sestava odpracovaného času z CSV exportu (TimeSpent) do branded PDF
-ve formátu faktury. Branding: **tdvorak.dev** — čistá černobílá škála, Open Sans / Noto Sans.
+Clean invoice-style PDF report from any CSV time-tracking export.
+Pure black & white palette, Open Sans / Noto Sans. Bilingual (EN / CS).
 
-## Funkce
+## Features
 
-- **Drag & drop** CSV exportu z TimeSpent
-- **Nastavení po nahrání** — referenční číslo, volba období, volba stylu
-- **Referenční číslo** — např. číslo faktury; zobrazí se vlevo nahoře s linkou jako na faktuře
-- **Název PDF souboru** — automaticky `{ref}-timespent.pdf` (např. `2026-0042-timespent.pdf`)
-- **Období:** podle souboru (přesný rozsah dat) nebo měsíční přehled (zvýrazní název měsíce)
-- **Dva styly:**
-  - **Plný** — vizuální bary, barevné pill tagy, světelný/tmavý motiv
-  - **Jednoduchý** — ink-saving, pouze bílý motiv, bez barů, čistý fakturový styl
-- **Vlastní logo** — nahrání obrázku, zobrazeno ve středu hlavičky
-- **Podpis** — nahrání obrázku, zobrazeno na konci dokumentu vpravo
-- **Multi-page** — obsah se přirozeně rozkládá přes více stran A4, bez prázdných stran
+- **Upload any CSV** — auto-detects columns (Description, Task, Start, End, Duration, Tags)
+- **Column mapping preview** — adjust which CSV column maps to which field; unmapped columns are ignored
+- **Live preview** — first 3 parsed rows shown before generating the report
+- **Missing columns handled gracefully** — no Task column → "Uncategorized", no Tags → "Remote", no Duration → computed from Start/End
+- **i18n** — English & Czech, toggle in top-right corner
+- **Post-upload settings** — reference number, period mode, style mode
+- **Reference number** — e.g. invoice number; shown top-left with a line like on an invoice
+- **PDF filename** — automatically `{ref}-timespent.pdf` (e.g. `2026-0042-timespent.pdf`)
+- **Period:** by file (exact date range) or monthly summary (highlights month name)
+- **Two styles:**
+  - **Full** — visual bars, colored pill tags, light/dark theme
+  - **Simple** — ink-saving, white-only, no bars, clean invoice style
+- **Custom logo** — upload image, shown in header center
+- **Signature** — upload image, shown at end of document right-aligned
+- **Multi-page** — content flows naturally across A4 pages, no blank pages
+- **Example CSV** — download a generic sample from the dropzone
 
-## Struktura sestavy
+## Report structure
 
-1. **Hlavička** — ref. číslo vlevo (s linkou), logo uprostřed, název + období + meta vpravo
-2. **Souhrnný panel** — Celkem odpracováno + rozpad On-site / Remote
-3. **Souhrn podle úkolu** — vizuální bary (pouze Plný styl) + celkový čas
-4. **Detailní přehled** — seskupeno podle **dne**, tabulka: Čas, Úkol, Popis, Tag, Doba
-5. **Podpis** — na konci dokumentu vpravo
+1. **Header** — ref. number left (with line), logo center, title + period + meta right
+2. **Totals band** — Total worked + On-site / Remote split
+3. **Summary by task** — visual bars (Full style only) + total time
+4. **Detailed breakdown** — grouped by **day**, table: Time, Task, Description, Tag, Duration
+5. **Signature + footer** — signature right-aligned, footer with GitHub link & copyright
 
-## Formát času
+## Time format
 
-Vše v přehledném formátu: `32 h 1 min`, `4 h 5 min`, `39 min` — žádné desetinné hodiny.
+All durations in readable format: `32 h 1 min`, `4 h 5 min`, `39 min` — no decimal hours.
 
-## Použité / ignorované sloupce
+## Column auto-detection
 
-- **Použité:** `Description`, `Task`, `Start`, `End`, `Duration`, `Tags`
-- **Ignorované:** `Project`, `Client`, `User`, `Duration (decimal)`, `Billable`
+The parser fuzzy-matches CSV headers to canonical fields using aliases:
 
-## Spuštění (dev)
+| Field | Aliases |
+|---|---|
+| Description | description, desc, note, notes, activity, comment, details |
+| Task | task, task name, activity, category, work item |
+| Start | start, start time, begin, from, start date, clock in |
+| End | end, end time, finish, to, end date, clock out, stop |
+| Duration | duration, elapsed, time spent, hours, total time, length, spent |
+| Tags | tags, tag, label, type, location, mode, category |
+
+Unmapped columns are silently ignored. You can override the auto-detection in the config overlay.
+
+## Supported date formats
+
+`YYYY-MM-DD HH:MM:SS`, `YYYY-MM-DDTHH:MM:SS`, `YYYY-MM-DD HH:MM`, `MM/DD/YYYY HH:MM`, `DD.MM.YYYY HH:MM`, `DD/MM/YYYY HH:MM`
+
+## Supported duration formats
+
+`H:MM:SS`, `H:MM`, decimal hours (`3.5`), plain number (treated as hours)
+
+## Dev
 
 ```bash
 npm install
@@ -44,30 +67,30 @@ npm run dev
 ## Build
 
 ```bash
-npm run build      # výstup do dist/
-npm run preview    # náhled produkčního buildu
+npm run build      # output to dist/
+npm run preview    # preview production build
 ```
 
 ## Docker
 
 ```bash
-docker build -t timespent-pdf .
-docker run -p 8080:80 timespent-pdf
+docker compose up --build -d    # build + run detached
+docker compose ps               # check status
+docker compose down             # stop + remove
 # → http://localhost:8080
 ```
 
-## Tipy pro PDF
+## PDF tips
 
-V tiskovém dialogu prohlížeče zvol:
-- **Cíl:** Uložit jako PDF
-- **Okraje:** výchozí / žádné
-- **Velikost:** A4
-- **Grafika pozadí:** zapnuto (pro správné bary a pill tagy)
+In the browser print dialog choose:
+- **Destination:** Save as PDF
+- **Margins:** default / none
+- **Size:** A4
+- **Background graphics:** enabled (for bars and pill tags)
 
-### Kvalita tisku
+### Print quality
 
-- **Písma:** Open Sans / Noto Sans, vykreslení `geometricPrecision`, vyhlazování zapnuto
-- **Logo:** 1890×337 px PNG — při výšce 14 mm v tisku ≈ 340 DPI (ostré)
-- **Tmavý motiv v tisku:** automaticky přepnut na bílý podklad (šetření inkoustu)
-- **Jednoduchý styl:** bez černých výplní, pouze tenké linky — maximální ink-saving
-- **Velikosti v pt:** všechny fonty v tisku používají fyzické jednotky (pt) pro konzistentní velikost napříč prohlížeči
+- **Fonts:** Open Sans / Noto Sans, `geometricPrecision` rendering, smoothing enabled
+- **Dark theme in print:** automatically switched to white background (ink saving)
+- **Simple style:** no black fills, only thin lines — maximum ink saving
+- **Sizes in pt:** all print fonts use physical units (pt) for consistent sizing across browsers
