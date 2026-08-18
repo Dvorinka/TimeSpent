@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
 import {
   parseCsv,
@@ -8,11 +8,19 @@ import {
   type RawParseResult,
 } from './parseCsv'
 import { Report } from './Report'
+import { EngineeringReport } from './EngineeringReport'
+import { mergeReports, type MergedReport } from './merge'
+import {
+  parseReport,
+  periodOverlapsCsv,
+  type EngineeringReport as EngReport,
+} from './reportSchema'
 import { useI18n } from './i18n'
 
 type Theme = 'light' | 'dark'
 type PeriodMode = 'file' | 'month'
 type StyleMode = 'full' | 'simple'
+type DocType = 'invoice' | 'engineering'
 
 function readImageAsDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -31,6 +39,7 @@ export default function App() {
   const [columnMapping, setColumnMapping] = useState<ColumnMapping | null>(null)
   const [csvText, setCsvText] = useState<string>('')
   const [error, setError] = useState<string>('')
+  const [warning, setWarning] = useState<string>('')
   const [dragOver, setDragOver] = useState(false)
   const [theme, setTheme] = useState<Theme>('light')
   const [styleMode, setStyleMode] = useState<StyleMode>('full')
@@ -41,7 +50,15 @@ export default function App() {
   const [periodMode, setPeriodMode] = useState<PeriodMode>('file')
   const [referenceNumber, setReferenceNumber] = useState<string>('')
 
+  // Engineering report JSON state
+  const [jsonReport, setJsonReport] = useState<EngReport | null>(null)
+  const [, setJsonFileName] = useState<string>('')
+
+  // Document type toggle
+  const [docType, setDocType] = useState<DocType>('invoice')
+
   const inputRef = useRef<HTMLInputElement>(null)
+  const jsonInputRef = useRef<HTMLInputElement>(null)
   const logoInputRef = useRef<HTMLInputElement>(null)
   const sigInputRef = useRef<HTMLInputElement>(null)
 
@@ -50,15 +67,17 @@ export default function App() {
   useEffect(() => {
     if (report && !showConfig) {
       const ref = referenceNumber.trim()
-      document.title = ref ? `${ref}-timespent` : 'timespent'
+      const docLabel = docType === 'engineering' ? 'eng-report' : 'timespent'
+      document.title = ref ? `${ref}-${docLabel}` : docLabel
     } else {
       document.title = t('dropzone.title')
     }
-  }, [report, showConfig, referenceNumber, t])
+  }, [report, showConfig, referenceNumber, docType, t])
 
   const handleFile = useCallback(
     (file: File) => {
       setError('')
+      setWarning('')
       const reader = new FileReader()
       reader.onload = () => {
         try {
@@ -89,6 +108,44 @@ export default function App() {
     },
     [lang, t],
   )
+
+  const handleJsonFile = useCallback(
+    (file: File) => {
+      setError('')
+      setWarning('')
+      const reader = new FileReader()
+      reader.onload = () => {
+        try {
+          const text = String(reader.result ?? '')
+          const parsed = parseReport(text)
+          setJsonReport(parsed)
+          setJsonFileName(file.name)
+
+          // Check period overlap with CSV
+          if (report) {
+            if (!periodOverlapsCsv(parsed, report.rangeStart, report.rangeEnd)) {
+              setWarning(t('json.error.noOverlap'))
+            }
+          }
+        } catch (e) {
+          setError(t('json.error.parse', { msg: (e as Error).message }))
+          setJsonReport(null)
+          setJsonFileName('')
+        }
+      }
+      reader.onerror = () => {
+        setError(t('dropzone.error.readFile'))
+      }
+      reader.readAsText(file)
+    },
+    [report, t],
+  )
+
+  const removeJson = useCallback(() => {
+    setJsonReport(null)
+    setJsonFileName('')
+    setWarning('')
+  }, [])
 
   const reparseWithMapping = useCallback(
     (mapping: ColumnMapping) => {
@@ -145,6 +202,11 @@ export default function App() {
     setPeriodMode('file')
     setStyleMode('full')
     setTheme('light')
+    setJsonReport(null)
+    setJsonFileName('')
+    setDocType('invoice')
+    setError('')
+    setWarning('')
   }, [])
 
   const toggleLang = useCallback(() => {
@@ -157,6 +219,19 @@ export default function App() {
       reparseWithMapping(columnMapping)
     }
   }, [lang, csvText, columnMapping, reparseWithMapping])
+
+  // Compute merged report when either source changes
+  const merged: MergedReport | null = useMemo(() => {
+    if (!report) return null
+    return mergeReports(report, jsonReport, lang)
+  }, [report, jsonReport, lang])
+
+  // Auto-switch to engineering report when JSON is uploaded
+  useEffect(() => {
+    if (jsonReport && report && !showConfig) {
+      setDocType('engineering')
+    }
+  }, [jsonReport, report, showConfig])
 
   const columnFields: { key: keyof ColumnMapping; label: string }[] = [
     { key: 'description', label: t('column.description') },
@@ -389,7 +464,51 @@ export default function App() {
               </span>
             </div>
             <div className="toolbar-right">
-              {styleMode === 'full' && (
+              {/* Document type toggle */}
+              <div className="doc-toggle" role="group" aria-label="Document type">
+                <button
+                  className={docType === 'invoice' ? 'is-active' : ''}
+                  onClick={() => setDocType('invoice')}
+                  title={t('doc.toggle.invoice')}
+                >
+                  {t('doc.toggle.invoice')}
+                </button>
+                <button
+                  className={docType === 'engineering' ? 'is-active' : ''}
+                  onClick={() => setDocType('engineering')}
+                  title={t('doc.toggle.engineering')}
+                  disabled={!jsonReport}
+                >
+                  {t('doc.toggle.engineering')}
+                </button>
+              </div>
+
+              {/* JSON upload button */}
+              <button
+                className="btn-ghost"
+                onClick={() => jsonInputRef.current?.click()}
+                title={t('json.uploadTitle')}
+              >
+                {jsonReport ? t('json.uploaded') : t('json.upload')}
+              </button>
+              <input
+                ref={jsonInputRef}
+                type="file"
+                accept=".json,application/json"
+                hidden
+                onChange={(e) => {
+                  const f = e.target.files?.[0]
+                  if (f) handleJsonFile(f)
+                  e.target.value = ''
+                }}
+              />
+              {jsonReport && (
+                <button className="btn-ghost" onClick={removeJson} title={t('json.remove')}>
+                  ×
+                </button>
+              )}
+
+              {docType === 'invoice' && styleMode === 'full' && (
                 <div className="theme-toggle" role="group" aria-label={t('toolbar.theme')}>
                   <button
                     className={theme === 'light' ? 'is-active' : ''}
@@ -407,22 +526,24 @@ export default function App() {
                   </button>
                 </div>
               )}
-              <div className="style-toggle" role="group" aria-label={t('toolbar.style')}>
-                <button
-                  className={styleMode === 'full' ? 'is-active' : ''}
-                  onClick={() => setStyleMode('full')}
-                  title={t('toolbar.full')}
-                >
-                  {t('toolbar.full')}
-                </button>
-                <button
-                  className={styleMode === 'simple' ? 'is-active' : ''}
-                  onClick={() => setStyleMode('simple')}
-                  title={t('toolbar.simple')}
-                >
-                  {t('toolbar.simple')}
-                </button>
-              </div>
+              {docType === 'invoice' && (
+                <div className="style-toggle" role="group" aria-label={t('toolbar.style')}>
+                  <button
+                    className={styleMode === 'full' ? 'is-active' : ''}
+                    onClick={() => setStyleMode('full')}
+                    title={t('toolbar.full')}
+                  >
+                    {t('toolbar.full')}
+                  </button>
+                  <button
+                    className={styleMode === 'simple' ? 'is-active' : ''}
+                    onClick={() => setStyleMode('simple')}
+                    title={t('toolbar.simple')}
+                  >
+                    {t('toolbar.simple')}
+                  </button>
+                </div>
+              )}
               <button
                 className="btn-ghost"
                 onClick={() => logoInputRef.current?.click()}
@@ -470,16 +591,35 @@ export default function App() {
               </button>
             </div>
           </div>
-          <Report
-            report={report}
-            theme={effectiveTheme}
-            logoUrl={logoUrl}
-            signatureUrl={signatureUrl}
-            referenceNumber={referenceNumber}
-            periodMode={periodMode}
-            styleMode={styleMode}
-            lang={lang}
-          />
+
+          {error && <div className="error no-print" style={{ margin: '12px 24px' }}>{error}</div>}
+          {warning && <div className="warning no-print" style={{ margin: '12px 24px' }}>{warning}</div>}
+
+          {docType === 'invoice' ? (
+            <Report
+              report={report}
+              theme={effectiveTheme}
+              logoUrl={logoUrl}
+              signatureUrl={signatureUrl}
+              referenceNumber={referenceNumber}
+              periodMode={periodMode}
+              styleMode={styleMode}
+              lang={lang}
+            />
+          ) : (
+            merged && (
+              <EngineeringReport
+                merged={merged}
+                csvReport={report}
+                jsonReport={jsonReport}
+                theme={effectiveTheme}
+                logoUrl={logoUrl}
+                signatureUrl={signatureUrl}
+                referenceNumber={referenceNumber}
+                lang={lang}
+              />
+            )
+          )}
         </>
       )}
 

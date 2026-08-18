@@ -110,17 +110,63 @@ export const translations = {
 
     // Language toggle
     'lang.toggle': 'EN / CS',
+
+    // Engineering report
+    'eng.title': 'Engineering Report',
+    'eng.repository': 'Repository',
+    'eng.commits': 'Commits',
+    'eng.filesTouched': 'Files touched',
+    'eng.netLines': 'Net lines',
+    'eng.activeDays': 'Active days',
+    'eng.days': 'days',
+    'eng.linesChanged': 'lines changed',
+    'eng.activityHeatmap': 'Activity heatmap',
+    'eng.releaseTimeline': 'Release timeline',
+    'eng.milestones': 'Milestones & goals',
+    'eng.nextMonthGoals': 'Next month',
+    'eng.dailyBreakdown': 'Daily breakdown',
+    'eng.noCommitsTagOnly': 'No commits (tag only)',
+    'eng.entries': 'Entries',
+    'eng.totalDuration': 'Total',
+    'eng.onSite': 'On-site',
+    'eng.remote': 'Remote',
+    'eng.noJsonHint': 'Upload an engineering report JSON to see git detail.',
+    'eng.noJsonSub': 'The Engineering Report is designed to merge CSV time data with a monthly git report.',
+    'eng.col.hash': 'Hash',
+    'eng.col.subject': 'Subject',
+    'eng.heatLess': 'Less',
+    'eng.heatMore': 'More',
+    'eng.heatWeekdays': 'S M T W T F S',
+    'eng.col.files': 'Files',
+    'eng.col.ins': 'Ins',
+    'eng.col.del': 'Del',
+    'eng.status.achieved': 'Achieved',
+    'eng.status.in-progress': 'In progress',
+    'eng.status.blocked': 'Blocked',
+    'eng.status.skipped': 'Skipped',
+
+    // Document toggle
+    'doc.toggle.invoice': 'Invoice',
+    'doc.toggle.engineering': 'Engineering Report',
+
+    // JSON upload
+    'json.upload': 'Upload monthly report JSON (optional)',
+    'json.uploadTitle': 'Upload engineering report JSON',
+    'json.uploaded': 'JSON loaded',
+    'json.remove': 'Remove JSON',
+    'json.error.parse': 'Error parsing JSON: {msg}',
+    'json.error.noOverlap': 'Warning: JSON period does not overlap CSV date range.',
+    'json.hint': 'Optional. Enriches the Engineering Report with commit detail, narratives, and milestones.',
   },
 
   cs: {
     // Dropzone
-    'dropzone.title':
-      'TimeSpent → PDF',
+    'dropzone.title': 'TimeSpent → PDF',
     'dropzone.subtitle':
-      'Nahrajte jakýkoliv CSV export časového sledování a vygenerujte přehlednou sestavu ve formátu faktury.',
+      'Nahrajte libovolný CSV export sledování času a vygenerujte přehlednou sestavu ve stylu faktury.',
     'dropzone.cta': 'Vybrat CSV soubor',
     'dropzone.hint':
-      'Použité sloupce: Description, Task, Start, End, Duration, Tags (auto-detekce)',
+      'Použité sloupce: Popis, Úkol, Začátek, Konec, Doba, Tagy (automaticky rozpoznáno)',
     'dropzone.example': 'Stáhnout ukázkové CSV',
     'dropzone.error.noEntries': 'V CSV nebyly nalezeny žádné platné záznamy.',
     'dropzone.error.parse': 'Chyba při zpracování CSV: {msg}',
@@ -143,15 +189,15 @@ export const translations = {
     'config.style': 'Styl',
     'config.style.full': 'Plný',
     'config.style.fullDesc':
-      'Vizuální bary, barevné pill tagy, světelný/tmavý motiv',
+      'Vizuální prvky, barevné štítky, světlý/tmavý vzhled',
     'config.style.simple': 'Jednoduchý',
     'config.style.simpleDesc':
-      'Ink-saving, pouze bílý motiv, bez vizuálních barů, čistý fakturový styl',
+      'Úsporný tisk, pouze bílé pozadí, bez vizuálních prvků, čistý fakturový styl',
     'config.cancel': 'Zrušit',
     'config.continue': 'Pokračovat',
     'config.columnMapping': 'Mapování sloupců',
     'config.columnMappingHint':
-      'Auto-detekováno. Upravte pokud potřebujete — nemapované sloupce se ignorují.',
+      'Auto-detekováno. Upravte podle potřeby — nemapované sloupce se ignorují.',
     'config.preview': 'Náhled (prvních 3 řádků)',
 
     // Toolbar
@@ -174,14 +220,14 @@ export const translations = {
     'report.title': 'Sestava odpracovaného času',
     'report.period': 'Období',
     'report.generated': 'Vygenerováno',
-    'report.entriesDays': 'Záznamů / Dní',
+    'report.entriesDays': 'Záznamů / dní',
     'report.totalWorked': 'Celkem odpracováno',
     'report.summaryByTask': 'Souhrn podle úkolu',
     'report.detailedBreakdown': 'Detailní přehled',
     'report.col.time': 'Čas',
     'report.col.task': 'Úkol',
     'report.col.description': 'Popis',
-    'report.col.tag': 'Tag',
+    'report.col.tag': 'Stav',
     'report.col.duration': 'Doba',
     'report.signature': '[ podpis ]',
 
@@ -198,6 +244,53 @@ export const translations = {
 
     // Language toggle
     'lang.toggle': 'EN / CS',
+
+    // Engineering report
+    'eng.title': 'Měsíční přehled vývoje',
+    'eng.repository': 'Repozitář',
+    'eng.commits': 'Commitů',
+    'eng.filesTouched': 'Dotčených souborů',
+    'eng.netLines': 'Čistých řádků',
+    'eng.activeDays': 'Aktivních dní',
+    'eng.days': 'dní',
+    'eng.linesChanged': 'změněných řádků',
+    'eng.activityHeatmap': 'Heatmapa aktivity',
+    'eng.releaseTimeline': 'Časová osa releasů',
+    'eng.milestones': 'Mílníky a cíle',
+    'eng.nextMonthGoals': 'Příští měsíc',
+    'eng.dailyBreakdown': 'Denní přehled',
+    'eng.noCommitsTagOnly': 'Bez commitů (pouze tag)',
+    'eng.entries': 'Záznamů',
+    'eng.totalDuration': 'Celkem',
+    'eng.onSite': 'On-site',
+    'eng.remote': 'Remote',
+    'eng.noJsonHint': 'Nahrajte JSON inženýrské sestavy pro zobrazení detailů z gitu.',
+    'eng.noJsonSub': 'Inženýrská sestava slouží ke sloučení CSV časových dat s měsíční git sestavou.',
+    'eng.col.hash': 'Hash',
+    'eng.col.subject': 'Popis',
+    'eng.col.files': 'Soubory',
+    'eng.col.ins': '+',
+    'eng.col.del': '-',
+    'eng.status.achieved': 'Dosaženo',
+    'eng.status.in-progress': 'V průběhu',
+    'eng.status.blocked': 'Blokováno',
+    'eng.status.skipped': 'Přeskočeno',
+    'eng.heatLess': 'Méně',
+    'eng.heatMore': 'Více',
+    'eng.heatWeekdays': 'Ne Po Út St Čt Pá So',
+
+    // Document toggle
+    'doc.toggle.invoice': 'Faktura',
+    'doc.toggle.engineering': 'Inženýrská sestava',
+
+    // JSON upload
+    'json.upload': 'Nahrát JSON měsíční sestavy (volitelné)',
+    'json.uploadTitle': 'Nahrát JSON inženýrské sestavy',
+    'json.uploaded': 'JSON načten',
+    'json.remove': 'Odebrat JSON',
+    'json.error.parse': 'Chyba při zpracování JSON: {msg}',
+    'json.error.noOverlap': 'Varování: Období JSON se nepřekrývá s rozsahem dat CSV.',
+    'json.hint': 'Volitelné. Inženýrskou sestavu obohatí o detaily commitů, popisy jednotlivých dnů a mílníky.',
   },
 } as const
 

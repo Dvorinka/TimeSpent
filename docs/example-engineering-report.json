@@ -1,0 +1,192 @@
+{
+  "schemaVersion": "1.0",
+  "type": "engineering-report",
+  "repository": "your-org/your-repo",
+  "period": {
+    "year": 2026,
+    "month": 7,
+    "start": "2026-07-01",
+    "end": "2026-07-31"
+  },
+  "author": "Your Name",
+  "excluded": [
+    "dependabot[bot]",
+    "other contributors"
+  ],
+  "comment": "Optional disclaimer or context note shown above the summary band. Use this field to explain abnormal work patterns, project context, or any caveat the reader should see first.",
+  "summary": {
+    "totalCommits": 42,
+    "filesTouched": 320,
+    "linesInserted": 12500,
+    "linesDeleted": 4800,
+    "netLines": 7700,
+    "tagsReleased": 5,
+    "activeDays": 12
+  },
+  "releases": [
+    {
+      "tag": "v1.0.0",
+      "date": "2026-07-10",
+      "milestone": "Initial release — core features, onboarding, seed data"
+    },
+    {
+      "tag": "v1.1.0",
+      "date": "2026-07-17",
+      "milestone": "Feature sprint — dashboard widgets, i18n, test coverage"
+    },
+    {
+      "tag": "v1.2.0",
+      "date": "2026-07-20",
+      "milestone": "UX overhaul, access control, kanban view"
+    },
+    {
+      "tag": "v2.0.0",
+      "date": "2026-07-23",
+      "milestone": "Breaking release — major consolidation, API cleanup"
+    },
+    {
+      "tag": "v2.0.1",
+      "date": "2026-07-30",
+      "milestone": "Patch — bug fixes, stabilization"
+    }
+  ],
+  "milestones": [
+    {
+      "id": "goal-1",
+      "title": "Core platform",
+      "dateRange": "1.–5. 7.",
+      "objective": "Build the core platform — models, API, UI shell, authentication.",
+      "status": "achieved",
+      "summary": "Over 20 commits delivering the data model, REST API, authentication, and the initial UI shell with navigation and dashboard."
+    },
+    {
+      "id": "goal-2",
+      "title": "Infrastructure",
+      "dateRange": "6.–10. 7.",
+      "objective": "Add caching layer and migrate to PostgreSQL.",
+      "status": "achieved",
+      "summary": "Cache layer with Redis pub/sub for SSE and distributed rate limiting. PostgreSQL migration with dual driver, full-text search, and dialect abstraction."
+    },
+    {
+      "id": "goal-3",
+      "title": "v2.0 release",
+      "dateRange": "20.–25. 7.",
+      "objective": "Consolidate develop into main, cut v2.0.0, ship patch releases.",
+      "status": "achieved",
+      "summary": "v2.0.0 cut on Jul 23. Patch releases through Jul 30 covering bug fixes, API standardization, and i18n."
+    }
+  ],
+  "days": [
+    {
+      "date": "2026-07-10",
+      "title": "Initial release",
+      "narrative": "Consolidation of the first sprint into a tagged release.",
+      "dateRange": "9.–10. července 2026",
+      "commitCount": 1,
+      "filesTouched": 180,
+      "linesInserted": 8200,
+      "linesDeleted": 1400,
+      "tags": [
+        "v1.0.0"
+      ],
+      "commits": [
+        {
+          "hash": "a1b2c3d4",
+          "subject": "feat(v1.0.0): initial release — core features, onboarding, seed data",
+          "files": 180,
+          "insertions": 8200,
+          "deletions": 1400
+        }
+      ]
+    },
+    {
+      "date": "2026-07-17",
+      "title": "Feature sprint",
+      "narrative": "This section covers the Jul 16–17 window. Work was done on Jul 16 and contributed to this commit, but no commits were created on that day.",
+      "dateRange": "16.–17. července 2026",
+      "commitCount": 3,
+      "filesTouched": 95,
+      "linesInserted": 3100,
+      "linesDeleted": 800,
+      "tags": [
+        "v1.1.0"
+      ],
+      "commits": [
+        {
+          "hash": "e5f6a7b8",
+          "subject": "feat: dashboard widgets and i18n infrastructure",
+          "files": 42,
+          "insertions": 1800,
+          "deletions": 300
+        },
+        {
+          "hash": "c9d0e1f2",
+          "subject": "test: add unit and integration test coverage",
+          "files": 38,
+          "insertions": 1100,
+          "deletions": 400
+        },
+        {
+          "hash": "3a4b5c6d",
+          "subject": "fix: correct pagination edge case in list endpoints",
+          "files": 15,
+          "insertions": 200,
+          "deletions": 100
+        }
+      ]
+    },
+    {
+      "date": "2026-07-23",
+      "title": "v2.0.0 consolidation",
+      "narrative": "This section covers the Jul 21–23 window. Work was done on Jul 21 and 22 and contributed to this commit, but no commits were created on those days.",
+      "dateRange": "21.–23. července 2026",
+      "commitCount": 1,
+      "filesTouched": 320,
+      "linesInserted": 12500,
+      "linesDeleted": 4800,
+      "tags": [
+        "v2.0.0"
+      ],
+      "commits": [
+        {
+          "hash": "7e8f9a0b",
+          "subject": "chore(release)!: merge develop into main — v2.0.0",
+          "files": 320,
+          "insertions": 12500,
+          "deletions": 4800
+        }
+      ]
+    },
+    {
+      "date": "2026-07-31",
+      "title": "No commits (tag only)",
+      "narrative": "",
+      "commitCount": 0,
+      "filesTouched": 0,
+      "linesInserted": 0,
+      "linesDeleted": 0,
+      "tags": [
+        "v2.0.1"
+      ],
+      "commits": []
+    }
+  ],
+  "technologyAreas": [
+    {
+      "area": "Backend / API",
+      "files": 120,
+      "keyCommits": "Schema design, REST endpoints, authentication, database migrations"
+    },
+    {
+      "area": "Frontend / React",
+      "files": 140,
+      "keyCommits": "Dashboard widgets, i18n, kanban view, UX overhaul"
+    },
+    {
+      "area": "Infrastructure / DevOps",
+      "files": 60,
+      "keyCommits": "Caching, PostgreSQL migration, CI pipeline, deployment config"
+    }
+  ],
+  "nextMonthGoals": ""
+}

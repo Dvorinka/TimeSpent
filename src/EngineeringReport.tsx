@@ -1,0 +1,427 @@
+import {
+  formatDate,
+  formatMonth,
+  formatTime,
+  type ParsedReport,
+} from './parseCsv'
+import { useI18n, type Lang } from './i18n'
+import {
+  formatNum,
+  formatSigned,
+  type MergedDay,
+  type MergedReport,
+} from './merge'
+import type { EngineeringReport as EngReport, ReportMilestone } from './reportSchema'
+
+type Theme = 'light' | 'dark'
+
+export function EngineeringReport({
+  merged,
+  csvReport,
+  jsonReport,
+  theme,
+  logoUrl,
+  signatureUrl,
+  referenceNumber,
+  lang,
+}: {
+  merged: MergedReport
+  csvReport: ParsedReport
+  jsonReport: EngReport | null
+  theme: Theme
+  logoUrl: string
+  signatureUrl: string | null
+  referenceNumber: string
+  lang: Lang
+}) {
+  const { t } = useI18n()
+
+  // All days: JSON days + CSV-only days, sorted chronologically
+  const allDays = merged.days
+
+  const periodDate = csvReport.rangeStart ?? (jsonReport ? new Date(jsonReport.period.start + 'T00:00:00') : new Date())
+  const periodEndDate = csvReport.rangeEnd ?? (jsonReport ? new Date(jsonReport.period.end + 'T00:00:00') : periodDate)
+
+  let periodLabel = ''
+  if (periodDate.getTime() === periodEndDate.getTime()) {
+    periodLabel = formatDate(periodDate, lang)
+  } else {
+    periodLabel = `${formatDate(periodDate, lang)} — ${formatDate(periodEndDate, lang)}`
+  }
+  const periodHeadline = formatMonth(periodDate, lang)
+
+  const generatedAt = new Date()
+  const generatedLabel = `${formatDate(generatedAt, lang)} · ${formatTime(generatedAt)}`
+
+  const hasJson = jsonReport !== null
+
+  return (
+    <div className="report eng-report" data-theme={theme} data-style="full">
+      <div className="doc">
+        {/* Header — same layout as invoice */}
+        <header className="doc-header">
+          <div className="doc-header-left">
+            {referenceNumber && (
+              <div className="doc-ref-block">
+                <div className="doc-ref-label">Ref.</div>
+                <div className="doc-ref-number">{referenceNumber}</div>
+                <div className="doc-ref-line" />
+              </div>
+            )}
+          </div>
+          <div className="doc-header-center">
+            {logoUrl && <img src={logoUrl} alt="Logo" className="doc-logo" />}
+          </div>
+          <div className="doc-header-right">
+            <div className="doc-title">{t('eng.title')}</div>
+            <div className="doc-period-headline">{periodHeadline}</div>
+            <div className="doc-meta">
+              <div className="doc-meta-row">
+                <span className="doc-meta-k">{t('eng.repository')}</span>
+                <span className="doc-meta-v">{jsonReport?.repository ?? '—'}</span>
+              </div>
+              <div className="doc-meta-row">
+                <span className="doc-meta-k">{t('report.period')}</span>
+                <span className="doc-meta-v">{periodLabel}</span>
+              </div>
+              <div className="doc-meta-row">
+                <span className="doc-meta-k">{t('report.generated')}</span>
+                <span className="doc-meta-v">{generatedLabel}</span>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div className="doc-rule" />
+
+        {/* Optional comment / disclaimer */}
+        {hasJson && jsonReport?.comment && (
+          <section className="eng-comment">
+            <p>{jsonReport.comment}</p>
+          </section>
+        )}
+
+        {/* Summary tiles */}
+        {hasJson && jsonReport ? (
+          <section className="eng-summary-band">
+            <div className="eng-summary-band-main">
+              <div className="eng-summary-band-label">{t('eng.commits')}</div>
+              <div className="eng-summary-band-value">{formatNum(jsonReport.summary.totalCommits)}</div>
+            </div>
+            <div className="eng-summary-band-split">
+              <div className="eng-summary-split-item">
+                <span className="eng-summary-split-label">{t('eng.filesTouched')}</span>
+                <span className="eng-summary-split-dur">{formatNum(jsonReport.summary.filesTouched)}</span>
+              </div>
+              <div className="eng-summary-split-item">
+                <span className="eng-summary-split-label">{t('eng.netLines')}</span>
+                <span className="eng-summary-split-dur">{formatSigned(jsonReport.summary.netLines)}</span>
+              </div>
+            </div>
+          </section>
+        ) : (
+          <section className="eng-empty-state">
+            <p className="eng-empty-text">{t('eng.noJsonHint')}</p>
+            <p className="eng-empty-sub">{t('eng.noJsonSub')}</p>
+          </section>
+        )}
+
+        {/* Milestone list */}
+        {hasJson && jsonReport && jsonReport.milestones.length > 0 && (
+          <section className="doc-section eng-milestones-section">
+            <h2 className="section-title">{t('eng.milestones')}</h2>
+            <ol className="eng-milestone-list">
+              {jsonReport.milestones.map((m, i) => (
+                <MilestoneRow key={m.id} index={i + 1} milestone={m} t={t} />
+              ))}
+            </ol>
+          </section>
+        )}
+
+        {/* Daily breakdown — JSON days + CSV-only days */}
+        {hasJson && allDays.length > 0 && (
+          <section className="doc-section">
+            <h2 className="section-title">
+              {t('eng.dailyBreakdown')} ({allDays.length} {t('eng.days')})
+            </h2>
+            {allDays.map((day) => (
+              <MergedDayBlock
+                key={day.dateKey}
+                day={day}
+                t={t}
+              />
+            ))}
+          </section>
+        )}
+
+        {/* Activity heatmap — at the bottom */}
+        {hasJson && jsonReport && (
+          <section className="doc-section eng-heatmap-section">
+            <h2 className="section-title">{t('eng.activityHeatmap')}</h2>
+            <ActivityHeatmap days={allDays} periodDate={periodDate} lang={lang} />
+          </section>
+        )}
+
+        {/* Next month goals — compact, only when present */}
+        {hasJson && jsonReport?.nextMonthGoals && (
+          <section className="eng-next-goals">
+            <h3 className="eng-next-goals-title">{t('eng.nextMonthGoals')}</h3>
+            <p className="eng-next-goals-text">{jsonReport.nextMonthGoals}</p>
+          </section>
+        )}
+
+        {/* Signature + footer */}
+        <section className="doc-closing">
+          <div className="signature-block">
+            <div className="signature-area">
+              {signatureUrl ? (
+                <img src={signatureUrl} alt="Signature" className="signature-img" />
+              ) : (
+                <div className="signature-placeholder">{t('report.signature')}</div>
+              )}
+              <div className="signature-line" />
+            </div>
+          </div>
+          <footer className="doc-footer">
+            Tool created by TDvorak ·{' '}
+            <a href="https://github.com/Dvorinka/TimeSpent" className="doc-footer-link">
+              github.com/Dvorinka/TimeSpent
+            </a>{' '}
+            · © 2026
+          </footer>
+        </section>
+      </div>
+    </div>
+  )
+}
+
+// ── Activity heatmap ────────────────────────────────────────────────────────
+
+function ActivityHeatmap({
+  days,
+  periodDate,
+  lang,
+}: {
+  days: MergedDay[]
+  periodDate: Date
+  lang: Lang
+}) {
+  const { t } = useI18n()
+
+  // Build a map of date -> intensity (commit count from JSON; 0 for non-git days)
+  const intensityMap = new Map<string, number>()
+  let maxIntensity = 1
+
+  for (const day of days) {
+    const intensity = day.reportDay?.commitCount ?? 0
+    intensityMap.set(day.dateKey, intensity)
+    if (intensity > maxIntensity) maxIntensity = intensity
+  }
+
+  // Build calendar grid for the period month
+  const year = periodDate.getFullYear()
+  const month = periodDate.getMonth()
+  const daysInMonth = new Date(year, month + 1, 0).getDate()
+
+  // Determine first day of month weekday (0=Sun)
+  const firstWeekday = new Date(year, month, 1).getDay()
+
+  const cells: { date: string | null; intensity: number; dayNum: number | null }[] = []
+  for (let i = 0; i < firstWeekday; i++) {
+    cells.push({ date: null, intensity: 0, dayNum: null })
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+    const intensity = intensityMap.get(dateKey) ?? 0
+    cells.push({ date: dateKey, intensity, dayNum: d })
+  }
+
+  const weekdayLabels = t('eng.heatWeekdays').split(' ')
+
+  function intensityClass(intensity: number): string {
+    if (intensity === 0) return 'eng-heat-cell-l0'
+    const ratio = intensity / maxIntensity
+    if (ratio > 0.75) return 'eng-heat-cell-l4'
+    if (ratio > 0.5) return 'eng-heat-cell-l3'
+    if (ratio > 0.25) return 'eng-heat-cell-l2'
+    return 'eng-heat-cell-l1'
+  }
+
+  return (
+    <div className="eng-heatmap" data-lang={lang}>
+      <div className="eng-heatmap-weekdays">
+        {weekdayLabels.map((w, i) => (
+          <div key={i} className="eng-heatmap-weekday">{w}</div>
+        ))}
+      </div>
+      <div className="eng-heatmap-grid">
+        {cells.map((cell, i) => (
+          <div
+            key={i}
+            className={`eng-heat-cell ${cell.date ? intensityClass(cell.intensity) : 'eng-heat-cell-empty'}`}
+            title={cell.date ? `${cell.date}: ${cell.intensity > 0 ? cell.intensity.toFixed(0) : 'no activity'}` : ''}
+          >
+            {cell.dayNum && <span className="eng-heat-cell-num">{cell.dayNum}</span>}
+          </div>
+        ))}
+      </div>
+      <div className="eng-heatmap-legend">
+        <span className="eng-heatmap-legend-label">{t('eng.heatLess')}</span>
+        <div className="eng-heat-cell eng-heat-cell-l0 eng-heat-cell-sm" />
+        <div className="eng-heat-cell eng-heat-cell-l1 eng-heat-cell-sm" />
+        <div className="eng-heat-cell eng-heat-cell-l2 eng-heat-cell-sm" />
+        <div className="eng-heat-cell eng-heat-cell-l3 eng-heat-cell-sm" />
+        <div className="eng-heat-cell eng-heat-cell-l4 eng-heat-cell-sm" />
+        <span className="eng-heatmap-legend-label">{t('eng.heatMore')}</span>
+      </div>
+    </div>
+  )
+}
+
+// ── Milestone card ──────────────────────────────────────────────────────────
+
+function MilestoneRow({
+  index,
+  milestone,
+  t,
+}: {
+  index: number
+  milestone: ReportMilestone
+  t: ReturnType<typeof useI18n>['t']
+}) {
+  const statusLabel = t(`eng.status.${milestone.status}` as Parameters<typeof t>[0])
+  const achieved = milestone.status === 'achieved'
+  return (
+    <li className="eng-milestone-row">
+      <div className="eng-milestone-index">{index}</div>
+      <div className="eng-milestone-body">
+        <div className="eng-milestone-row-header">
+          <span className="eng-milestone-row-title">{milestone.title}</span>
+          <span
+            className={`eng-milestone-badge ${achieved ? 'eng-milestone-badge-on' : 'eng-milestone-badge-off'}`}
+            title={statusLabel}
+          >
+            {achieved ? '✓' : '✕'}
+          </span>
+        </div>
+        <div className="eng-milestone-row-statusline">{statusLabel}</div>
+        <div className="eng-milestone-row-meta">{milestone.dateRange}</div>
+        <div className="eng-milestone-row-objective">{milestone.objective}</div>
+        <div className="eng-milestone-row-summary">{milestone.summary}</div>
+      </div>
+    </li>
+  )
+}
+
+// ── Merged day block: git days + time-only days in the same visual style ─────
+
+function MergedDayBlock({
+  day,
+  t,
+}: {
+  day: MergedDay
+  t: ReturnType<typeof useI18n>['t']
+}) {
+  const hasJson = day.reportDay !== null
+
+  if (hasJson) {
+    const report = day.reportDay!
+    const hasCommits = report.commitCount > 0
+
+    return (
+      <div className="eng-day-block">
+        <div className="eng-day-head">
+          <span className="eng-day-date">{day.dateLabel}</span>
+          {report.title && <span className="eng-day-title">{report.title}</span>}
+          {report.tags && report.tags.length > 0 && (
+            <span className="eng-day-tags">
+              {report.tags.map((tag) => (
+                <span key={tag} className="eng-day-tag">{tag}</span>
+              ))}
+            </span>
+          )}
+        </div>
+
+        {report.narrative && <p className="eng-day-narrative">{report.narrative}</p>}
+
+        {hasCommits && (
+          <table className="eng-commits-table">
+            <thead>
+              <tr>
+                <th className="eng-col-hash">{t('eng.col.hash')}</th>
+                <th className="eng-col-subject">{t('eng.col.subject')}</th>
+                <th className="eng-col-files">{t('eng.col.files')}</th>
+                <th className="eng-col-ins">{t('eng.col.ins')}</th>
+                <th className="eng-col-del">{t('eng.col.del')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {report.commits.map((c, i) => (
+                <tr key={`${day.dateKey}-${i}`}>
+                  <td className="eng-col-hash"><code>{c.hash}</code></td>
+                  <td className="eng-col-subject">{c.subject}</td>
+                  <td className="eng-col-files">{formatNum(c.files)}</td>
+                  <td className="eng-col-ins"><span className="eng-diff-sign">+</span>{formatNum(c.insertions)}</td>
+                  <td className="eng-col-del"><span className="eng-diff-sign">−</span>{formatNum(c.deletions)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+
+        {report.commitCount > 0 && (
+          <div className="eng-day-stats">
+            <span className="eng-day-stat">
+              <strong>{report.commitCount}</strong> {t('eng.commits')}
+            </span>
+            <span className="eng-day-stat">
+              <strong>{formatNum(report.filesTouched)}</strong> {t('eng.filesTouched')}
+            </span>
+            <span className="eng-day-stat">
+              <strong>+{formatNum(report.linesInserted)}</strong> /{' '}
+              <strong>-{formatNum(report.linesDeleted)}</strong> {t('eng.linesChanged')}
+            </span>
+          </div>
+        )}
+
+        {!hasCommits && (
+          <div className="eng-day-no-activity">{t('eng.noCommitsTagOnly')}</div>
+        )}
+      </div>
+    )
+  }
+
+  // CSV-only day: same visual container as JSON days, table without time columns
+  if (day.csvDay) {
+    const csv = day.csvDay!
+
+    return (
+      <div className="eng-day-block">
+        <div className="eng-day-head">
+          <span className="eng-day-date">{day.dateLabel}</span>
+        </div>
+
+        <table className="eng-commits-table">
+          <thead>
+            <tr>
+              <th className="eng-col-subject">{t('report.col.task')}</th>
+              <th className="eng-col-subject">{t('report.col.description')}</th>
+              <th className="eng-col-files">{t('report.col.tag')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {csv.entries.map((e, i) => (
+              <tr key={`${day.dateKey}-${i}`}>
+                <td className="eng-col-subject">{e.task}</td>
+                <td className="eng-col-subject">{e.description}</td>
+                <td className="eng-col-files">{e.tag}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )
+  }
+
+  return null
+}

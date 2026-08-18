@@ -16,6 +16,10 @@ dist-ssr
 time-entries-export*.csv
 *.csv.local
 
+# Real report data (keep examples only)
+docs/july-*.json
+docs/july-*.md
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -26,3 +30,6 @@ time-entries-export*.csv
 *.njsproj
 *.sln
 *.sw?
+
+# Playwright MCP artifacts
+.playwright-mcp/

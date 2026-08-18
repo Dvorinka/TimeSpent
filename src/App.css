@@ -133,15 +133,17 @@
   inset: 0;
   z-index: 50;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   padding: 24px;
+  overflow-y: auto;
   background: color-mix(in srgb, var(--bg) 80%, transparent);
   backdrop-filter: blur(6px);
 }
 
 .config-card {
   width: min(520px, 100%);
+  margin: auto;
   background: var(--surface);
   border: 1px solid var(--line-strong);
   border-radius: 18px;
@@ -342,6 +344,74 @@
 
 .preview-table tbody tr:last-child td {
   border-bottom: none;
+}
+
+/* ============ Config overlay responsive ============ */
+@media (max-width: 720px) {
+  .config-overlay {
+    padding: 12px;
+  }
+  .config-card {
+    padding: 20px 16px 16px;
+    border-radius: 14px;
+    gap: 14px;
+  }
+  .config-card h2 {
+    font-size: 18px;
+  }
+  .config-sub {
+    font-size: 12px;
+  }
+  .column-mapping-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+  }
+  .column-mapping-label {
+    flex: none;
+    font-size: 11px;
+  }
+  .column-mapping-select {
+    width: 100%;
+  }
+  .preview-table tbody td {
+    max-width: 120px;
+    font-size: 10.5px;
+  }
+  .preview-table thead th {
+    font-size: 9px;
+    padding: 6px 8px;
+  }
+  .config-actions {
+    flex-direction: column-reverse;
+    gap: 8px;
+  }
+  .config-actions button {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .config-card {
+    padding: 16px 12px 14px;
+  }
+  .config-radio {
+    padding: 10px 12px;
+  }
+  .config-radio-text strong {
+    font-size: 12.5px;
+  }
+  .config-radio-text small {
+    font-size: 11px;
+  }
+  .preview-table {
+    font-size: 10px;
+  }
+  .preview-table tbody td {
+    max-width: 90px;
+    padding: 6px 6px;
+  }
 }
 
 /* ============ Toolbar ============ */
@@ -1030,13 +1100,89 @@
   .doc-meta-row {
     justify-content: flex-start;
   }
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 10px 14px;
+  }
+  .toolbar-left {
+    text-align: center;
+  }
+  .toolbar-ref {
+    max-width: 100%;
+  }
   .toolbar-right {
     gap: 6px;
+    justify-content: center;
   }
   .btn-ghost,
   .btn-primary {
     padding: 8px 12px;
     font-size: 12px;
+  }
+  .report {
+    padding: 16px 10px 48px;
+  }
+  .doc {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .toolbar-right {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+  .toolbar-right > button,
+  .toolbar-right > .doc-toggle,
+  .toolbar-right > .theme-toggle,
+  .toolbar-right > .style-toggle {
+    width: 100%;
+    text-align: center;
+  }
+  .doc-toggle,
+  .theme-toggle,
+  .style-toggle {
+    display: flex;
+  }
+  .doc-toggle button,
+  .theme-toggle button,
+  .style-toggle button {
+    flex: 1;
+  }
+  .eng-summary-band {
+    flex-direction: column;
+  }
+  .eng-summary-band-main {
+    flex: 0 0 auto;
+  }
+  .eng-summary-band-split {
+    flex-direction: column;
+  }
+  .eng-summary-split-item {
+    border-left: none;
+    border-top: 1px solid var(--line-strong);
+  }
+  .eng-commits-table {
+    font-size: 10px;
+  }
+  .eng-col-hash {
+    width: 52px;
+  }
+  .eng-col-hash code {
+    font-size: 8px;
+  }
+  .eng-col-files,
+  .eng-col-ins,
+  .eng-col-del {
+    width: 38px;
+    font-size: 9px;
+  }
+  .eng-day-stats {
+    flex-direction: column;
+    gap: 4px;
   }
 }
 
@@ -1202,3 +1348,774 @@
     box-shadow: none !important;
   }
 }
+
+/* ============ Engineering Report ============ */
+
+/* Comment / disclaimer block */
+.eng-comment {
+  background: var(--surface-2);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  padding: 14px 18px;
+  margin-bottom: 24px;
+  break-inside: avoid;
+}
+
+.eng-comment p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Summary band — mirrors the invoice totals-band layout */
+.eng-summary-band {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 28px;
+  break-inside: avoid;
+}
+
+.eng-summary-band-main {
+  flex: 0 0 32%;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  padding: 18px 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.eng-summary-band-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  opacity: 0.8;
+}
+
+.eng-summary-band-value {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-top: 4px;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.eng-summary-band-split {
+  flex: 1;
+  display: flex;
+}
+
+.eng-summary-split-item {
+  flex: 1;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-left: 1px solid var(--line-strong);
+  background: var(--surface);
+}
+
+.eng-summary-split-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.eng-summary-split-dur {
+  font-size: 16px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+/* Activity heatmap */
+.eng-heatmap-section {
+  break-inside: avoid;
+}
+
+.eng-heatmap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.eng-heatmap-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  max-width: 280px;
+}
+
+.eng-heatmap-weekday {
+  font-size: 9px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-align: center;
+  font-weight: 600;
+}
+
+.eng-heatmap-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  max-width: 280px;
+}
+
+.eng-heat-cell {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  color: var(--text-dim);
+  font-weight: 600;
+  position: relative;
+}
+
+.eng-heat-cell-empty {
+  background: transparent;
+  border: 1px dashed var(--line);
+}
+
+.eng-heat-cell-l0 {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+}
+
+.eng-heat-cell-l1 {
+  background: color-mix(in srgb, var(--accent) 25%, var(--surface-2));
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, var(--line));
+  color: var(--text-soft);
+}
+
+.eng-heat-cell-l2 {
+  background: color-mix(in srgb, var(--accent) 50%, var(--surface-2));
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, var(--line));
+  color: var(--accent-contrast);
+}
+
+.eng-heat-cell-l3 {
+  background: color-mix(in srgb, var(--accent) 75%, var(--surface-2));
+  border: 1px solid color-mix(in srgb, var(--accent) 75%, var(--line));
+  color: var(--accent-contrast);
+}
+
+.eng-heat-cell-l4 {
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: var(--accent-contrast);
+}
+
+.eng-heat-cell-num {
+  font-size: 8px;
+}
+
+.eng-heat-cell-sm {
+  width: 14px;
+  height: 14px;
+  aspect-ratio: 1;
+  border-radius: 3px;
+}
+
+.eng-heatmap-legend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.eng-heatmap-legend-label {
+  margin: 0 2px;
+}
+
+/* Empty state (no JSON uploaded yet) */
+.eng-empty-state {
+  text-align: center;
+  padding: 28px 20px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  margin-bottom: 28px;
+  break-inside: avoid;
+}
+
+.eng-empty-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 6px;
+}
+
+.eng-empty-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Release timeline — vertical, non-overlapping list */
+/* Milestone list — numbered vertical list with connecting line */
+.eng-milestones-section {
+  break-after: avoid;
+}
+
+.eng-milestone-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  counter-reset: milestone;
+}
+
+.eng-milestone-row {
+  display: flex;
+  gap: 18px;
+  padding: 0 0 24px;
+  break-inside: avoid;
+  position: relative;
+}
+
+.eng-milestone-row:last-child {
+  padding-bottom: 0;
+}
+
+/* Vertical connecting line */
+.eng-milestone-row:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 17px;
+  top: 34px;
+  bottom: 0;
+  width: 2px;
+  background: var(--line-strong);
+}
+
+.eng-milestone-index {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  z-index: 1;
+}
+
+.eng-milestone-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 4px;
+}
+
+.eng-milestone-row-header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.eng-milestone-row-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.eng-milestone-row-status {
+  display: none;
+}
+
+.eng-milestone-badge {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.eng-milestone-badge-on {
+  background: #22c55e;
+  color: #ffffff;
+}
+
+.eng-milestone-badge-off {
+  background: var(--surface);
+  color: var(--text-dim);
+  border: 1.5px solid var(--line-strong);
+}
+
+.eng-milestone-row-statusline {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+}
+
+.eng-milestone-row-meta {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.eng-milestone-row-objective {
+  font-size: 12px;
+  color: var(--text-soft);
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.eng-milestone-row-summary {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+/* Next month goals — compact footer note */
+.eng-next-goals {
+  margin-bottom: 24px;
+  padding: 14px 18px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--surface);
+  break-inside: avoid;
+}
+
+.eng-next-goals-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+  margin: 0 0 6px;
+}
+
+.eng-next-goals-text {
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Engineering day blocks */
+.eng-day-block {
+  margin-bottom: 20px;
+  break-inside: avoid;
+}
+
+.eng-day-block:last-child {
+  margin-bottom: 0;
+}
+
+.eng-day-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--line);
+}
+
+.eng-day-date {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-soft);
+  text-transform: capitalize;
+}
+
+.eng-day-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.eng-day-tags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.eng-day-tag {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+.eng-day-narrative {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.55;
+  margin: 0 0 10px;
+}
+
+/* Commit table */
+.eng-commits-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  table-layout: fixed;
+  margin-bottom: 6px;
+}
+
+.eng-commits-table thead th {
+  text-align: left;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  font-weight: 700;
+  padding: 5px 8px;
+  border-bottom: 1px solid var(--line-strong);
+}
+
+.eng-commits-table tbody td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.eng-commits-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.eng-col-hash {
+  width: 70px;
+  white-space: nowrap;
+}
+
+.eng-col-hash code {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+}
+
+.eng-col-subject {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.eng-col-files,
+.eng-col-ins,
+.eng-col-del {
+  width: 56px;
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+}
+
+.eng-col-ins {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.eng-col-del {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.eng-diff-sign {
+  font-size: 14px;
+  font-weight: 800;
+  margin-right: 2px;
+}
+
+.eng-col-ins .eng-diff-sign {
+  color: #16a34a;
+}
+
+.eng-col-del .eng-diff-sign {
+  color: #dc2626;
+}
+
+/* Day stats footer */
+.eng-day-stats {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 10px;
+  color: var(--text-dim);
+  padding: 4px 0 8px;
+  border-bottom: 1px dotted var(--line);
+  margin-bottom: 8px;
+}
+
+.eng-day-stat strong {
+  color: var(--text-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.eng-day-no-activity {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-style: italic;
+  padding: 8px 0;
+}
+
+/* Time report — reuses eng-day-block with a simpler table */
+.time-report .eng-day-head .eng-day-title {
+  font-size: 11px;
+  color: var(--text-soft);
+  font-weight: 600;
+  margin-left: auto;
+}
+
+.time-entries-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  margin: 8px 0 4px;
+}
+
+.time-entries-table thead th {
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line);
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--surface);
+}
+
+.time-entries-table tbody td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.time-entries-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.time-col-time {
+  width: 90px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
+.time-col-task {
+  width: auto;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.time-col-status {
+  width: 90px;
+  white-space: nowrap;
+}
+
+.time-col-dur {
+  width: 70px;
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Document toggle */
+.doc-toggle {
+  display: inline-flex;
+  border: 1px solid var(--line-strong);
+  border-radius: 9px;
+  overflow: hidden;
+}
+
+.doc-toggle button {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.doc-toggle button.is-active {
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+
+.doc-toggle button:not(.is-active):hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.doc-toggle button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Warning banner */
+.warning {
+  color: #f59e0b;
+  background: color-mix(in srgb, #f59e0b 10%, var(--bg));
+  border: 1px solid color-mix(in srgb, #f59e0b 30%, transparent);
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  max-width: 820px;
+}
+
+/* Responsive for engineering report */
+@media (max-width: 720px) {
+  .eng-summary-band {
+    flex-direction: column;
+  }
+  .eng-summary-band-main {
+    flex: 0 0 auto;
+  }
+  .eng-summary-band-split {
+    flex-direction: column;
+  }
+  .eng-summary-split-item {
+    border-left: none;
+    border-top: 1px solid var(--line-strong);
+  }
+  .eng-commits-table {
+    table-layout: auto;
+  }
+  .eng-col-subject {
+    word-break: break-word;
+  }
+}
+
+/* Print adjustments for engineering report */
+@media print {
+  .eng-comment {
+    padding: 10pt 14pt;
+    margin-bottom: 16pt;
+    border-radius: 0 5pt 5pt 0;
+  }
+  .eng-comment p {
+    font-size: 9pt;
+    line-height: 1.5;
+  }
+  .eng-summary-band {
+    border-radius: 8pt;
+  }
+  .eng-summary-band-main {
+    padding: 12pt 14pt;
+  }
+  .eng-summary-band-value {
+    font-size: 18pt;
+  }
+  .eng-summary-band-label {
+    font-size: 8pt;
+  }
+  .eng-summary-split-item {
+    padding: 10pt 12pt;
+  }
+  .eng-summary-split-dur {
+    font-size: 12pt;
+  }
+  .eng-summary-split-label {
+    font-size: 8pt;
+  }
+  .eng-heatmap-grid,
+  .eng-heatmap-weekdays {
+    max-width: 200pt;
+  }
+  .eng-heat-cell {
+    border-radius: 2pt;
+  }
+  .eng-milestone-index {
+    width: 24pt;
+    height: 24pt;
+    font-size: 11pt;
+  }
+  .eng-milestone-row {
+    padding-bottom: 16pt;
+  }
+  .eng-milestone-row:not(:last-child)::after {
+    left: 12pt;
+    top: 26pt;
+  }
+  .eng-milestone-row-title {
+    font-size: 11pt;
+  }
+  .eng-milestone-row-objective {
+    font-size: 9pt;
+  }
+  .eng-milestone-row-summary {
+    font-size: 9pt;
+  }
+  .eng-commits-table {
+    font-size: 8pt;
+  }
+  .eng-commits-table thead th {
+    font-size: 7pt;
+  }
+  .eng-col-hash code {
+    font-size: 7pt;
+  }
+  .eng-day-narrative {
+    font-size: 9pt;
+  }
+  .eng-day-stats {
+    font-size: 8pt;
+  }
+  .eng-next-goals {
+    padding: 10pt 12pt;
+    margin-bottom: 16pt;
+    border-radius: 6pt;
+  }
+  .eng-next-goals-title {
+    font-size: 8pt;
+  }
+  .eng-next-goals-text {
+    font-size: 9pt;
+  }
+
+  /* Dark theme in print: force white */
+  .eng-report[data-theme='dark'] {
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --surface-2: #f6f6f6;
+    --line: #e4e4e4;
+    --line-strong: #d0d0d0;
+    --text: #000000;
+    --text-soft: #1a1a1a;
+    --text-muted: #444444;
+    --text-dim: #666666;
+    --accent: #000000;
+    --accent-contrast: #ffffff;
+  }
+}
+
