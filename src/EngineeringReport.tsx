@@ -15,6 +15,37 @@ import type { EngineeringReport as EngReport, ReportMilestone } from './reportSc
 
 type Theme = 'light' | 'dark'
 
+/**
+ * Derive a GitHub commit base URL from a repository string.
+ * Accepts either a bare "owner/repo" or a decorated form like
+ * "ELXTECH/MyBox_Ops (worktree: MyBox_Worktree)".
+ * Returns "https://github.com/<owner>/<repo>/commit/" or null when the
+ * input cannot be parsed.
+ */
+function repoToBaseUrl(repo: string | undefined): string | null {
+  if (!repo) return null
+  const match = repo.match(/^\s*([A-Za-z0-9._-]+\/[A-Za-z0-9._-]+)/)
+  if (!match) return null
+  return `https://github.com/${match[1]}/commit/`
+}
+
+/**
+ * Build a lookup of repo key -> commit base URL from the report's
+ * `repositories` map. Used to resolve per-commit `repo` overrides.
+ */
+function buildRepoBaseUrlMap(
+  repositories: Record<string, string> | undefined,
+): Map<string, string> {
+  const map = new Map<string, string>()
+  if (repositories) {
+    for (const [key, repo] of Object.entries(repositories)) {
+      const base = repoToBaseUrl(repo)
+      if (base) map.set(key, base)
+    }
+  }
+  return map
+}
+
 export function EngineeringReport({
   merged,
   csvReport,
@@ -54,6 +85,8 @@ export function EngineeringReport({
   const generatedLabel = `${formatDate(generatedAt, lang)} · ${formatTime(generatedAt)}`
 
   const hasJson = jsonReport !== null
+  const commitBaseUrl = repoToBaseUrl(jsonReport?.repository)
+  const repoBaseUrlMap = buildRepoBaseUrlMap(jsonReport?.repositories)
 
   return (
     <div className="report eng-report" data-theme={theme} data-style="full">
@@ -149,6 +182,8 @@ export function EngineeringReport({
                 key={day.dateKey}
                 day={day}
                 t={t}
+                commitBaseUrl={commitBaseUrl}
+                repoBaseUrlMap={repoBaseUrlMap}
               />
             ))}
           </section>
@@ -318,9 +353,13 @@ function MilestoneRow({
 function MergedDayBlock({
   day,
   t,
+  commitBaseUrl,
+  repoBaseUrlMap,
 }: {
   day: MergedDay
   t: ReturnType<typeof useI18n>['t']
+  commitBaseUrl: string | null
+  repoBaseUrlMap: Map<string, string>
 }) {
   const hasJson = day.reportDay !== null
 
@@ -356,15 +395,28 @@ function MergedDayBlock({
               </tr>
             </thead>
             <tbody>
-              {report.commits.map((c, i) => (
-                <tr key={`${day.dateKey}-${i}`}>
-                  <td className="eng-col-hash"><code>{c.hash}</code></td>
-                  <td className="eng-col-subject">{c.subject}</td>
-                  <td className="eng-col-files">{formatNum(c.files)}</td>
-                  <td className="eng-col-ins"><span className="eng-diff-sign">+</span>{formatNum(c.insertions)}</td>
-                  <td className="eng-col-del"><span className="eng-diff-sign">−</span>{formatNum(c.deletions)}</td>
-                </tr>
-              ))}
+              {report.commits.map((c, i) => {
+                // Per-commit repo override wins; otherwise use the default.
+                const base = (c.repo && repoBaseUrlMap.get(c.repo)) || commitBaseUrl
+                const commitUrl = base ? base + c.hash : null
+                return (
+                  <tr key={`${day.dateKey}-${i}`}>
+                    <td className="eng-col-hash">
+                      {commitUrl ? (
+                        <a href={commitUrl} target="_blank" rel="noopener noreferrer" className="eng-commit-link">
+                          <code>{c.hash}</code>
+                        </a>
+                      ) : (
+                        <code>{c.hash}</code>
+                      )}
+                    </td>
+                    <td className="eng-col-subject">{c.subject}</td>
+                    <td className="eng-col-files">{formatNum(c.files)}</td>
+                    <td className="eng-col-ins"><span className="eng-diff-sign">+</span>{formatNum(c.insertions)}</td>
+                    <td className="eng-col-del"><span className="eng-diff-sign">−</span>{formatNum(c.deletions)}</td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         )}

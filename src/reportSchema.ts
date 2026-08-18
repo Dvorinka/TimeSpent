@@ -25,6 +25,10 @@ export interface ReportCommit {
   files: number
   insertions: number
   deletions: number
+  // Optional key into EngineeringReport.repositories. When set, the commit
+  // hash links to the GitHub URL derived from that repo instead of the
+  // top-level `repository` field.
+  repo?: string
 }
 
 export interface ReportDay {
@@ -69,6 +73,11 @@ export interface EngineeringReport {
   schemaVersion: string
   type: 'engineering-report'
   repository: string
+  // Optional map of short keys to "owner/repo" strings, allowing per-commit
+  // repo overrides via ReportCommit.repo. When a commit sets `repo`, the URL
+  // is derived from the matching entry here; otherwise the top-level
+  // `repository` field is used as the default.
+  repositories?: Record<string, string>
   period: ReportPeriod
   author: string
   excluded: string[]
@@ -150,6 +159,19 @@ export function validateReport(input: unknown): ReportValidationResult {
   // repository
   if (!isStr(root.repository)) {
     errors.push({ field: 'repository', message: 'Required non-empty string.' })
+  }
+
+  // repositories (optional map of key -> "owner/repo")
+  if (root.repositories !== undefined) {
+    if (!isObj(root.repositories)) {
+      errors.push({ field: 'repositories', message: 'Optional object of key -> "owner/repo" string.' })
+    } else {
+      for (const [k, v] of Object.entries(root.repositories as Record<string, unknown>)) {
+        if (!isStr(v)) {
+          errors.push({ field: `repositories.${k}`, message: 'Must be a "owner/repo" string.' })
+        }
+      }
+    }
   }
 
   // author
@@ -343,6 +365,7 @@ function validateDays(v: unknown): ReportValidationError[] {
         if (!isInt(cm.files)) errors.push({ field: `days[${i}].commits[${j}].files`, message: 'Required integer.' })
         if (!isInt(cm.insertions)) errors.push({ field: `days[${i}].commits[${j}].insertions`, message: 'Required integer.' })
         if (!isInt(cm.deletions)) errors.push({ field: `days[${i}].commits[${j}].deletions`, message: 'Required integer.' })
+        if (cm.repo !== undefined && !isStr(cm.repo)) errors.push({ field: `days[${i}].commits[${j}].repo`, message: 'Optional string key into repositories.' })
       })
     }
   })

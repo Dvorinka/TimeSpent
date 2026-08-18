@@ -2,6 +2,10 @@
   "schemaVersion": "1.0",
   "type": "engineering-report",
   "repository": "your-org/your-repo",
+  "repositories": {
+    "primary": "your-org/your-repo",
+    "infra": "your-org/your-infra"
+  },
   "period": {
     "year": 2026,
     "month": 7,
@@ -131,7 +135,8 @@
           "subject": "fix: correct pagination edge case in list endpoints",
           "files": 15,
           "insertions": 200,
-          "deletions": 100
+          "deletions": 100,
+          "repo": "infra"
         }
       ]
     },
