@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import {
   formatDate,
   formatMonth,
@@ -51,6 +52,7 @@ export function EngineeringReport({
   csvReport,
   jsonReport,
   theme,
+  styleMode,
   logoUrl,
   signatureUrl,
   referenceNumber,
@@ -60,6 +62,7 @@ export function EngineeringReport({
   csvReport: ParsedReport
   jsonReport: EngReport | null
   theme: Theme
+  styleMode: 'full' | 'colored' | 'simple'
   logoUrl: string
   signatureUrl: string | null
   referenceNumber: string
@@ -89,7 +92,7 @@ export function EngineeringReport({
   const repoBaseUrlMap = buildRepoBaseUrlMap(jsonReport?.repositories)
 
   return (
-    <div className="report eng-report" data-theme={theme} data-style="full">
+    <div className="report eng-report" data-theme={theme} data-style={styleMode}>
       <div className="doc">
         {/* Header — same layout as invoice */}
         <header className="doc-header">
@@ -150,6 +153,14 @@ export function EngineeringReport({
                 <span className="eng-summary-split-label">{t('eng.netLines')}</span>
                 <span className="eng-summary-split-dur">{formatSigned(jsonReport.summary.netLines)}</span>
               </div>
+              <div className="eng-summary-split-item">
+                <span className="eng-summary-split-label">{t('eng.activeDays')}</span>
+                <span className="eng-summary-split-dur">{formatNum(jsonReport.summary.activeDays)}</span>
+              </div>
+              <div className="eng-summary-split-item">
+                <span className="eng-summary-split-label">{t('eng.tagsReleased')}</span>
+                <span className="eng-summary-split-dur">{formatNum(jsonReport.summary.tagsReleased)}</span>
+              </div>
             </div>
           </section>
         ) : (
@@ -157,6 +168,11 @@ export function EngineeringReport({
             <p className="eng-empty-text">{t('eng.noJsonHint')}</p>
             <p className="eng-empty-sub">{t('eng.noJsonSub')}</p>
           </section>
+        )}
+
+        {/* Per-repo breakdown */}
+        {hasJson && jsonReport && (
+          <RepoBreakdown jsonReport={jsonReport} t={t} colored={styleMode === 'colored'} />
         )}
 
         {/* Milestone list */}
@@ -184,6 +200,8 @@ export function EngineeringReport({
                 t={t}
                 commitBaseUrl={commitBaseUrl}
                 repoBaseUrlMap={repoBaseUrlMap}
+                jsonReport={jsonReport}
+                colored={styleMode === 'colored'}
               />
             ))}
           </section>
@@ -348,24 +366,164 @@ function MilestoneRow({
   )
 }
 
+// ── Repo breakdown ──────────────────────────────────────────────────────────
+
+function RepoBreakdown({
+  jsonReport,
+  t,
+  colored,
+}: {
+  jsonReport: EngReport
+  t: ReturnType<typeof useI18n>['t']
+  colored: boolean
+}) {
+  // Compute per-repo stats from all commits across all days
+  const repoStats = new Map<string, { commits: number; files: number; ins: number; del: number }>()
+
+  for (const day of jsonReport.days) {
+    for (const c of day.commits) {
+      const repoKey = c.repo ?? '__primary__'
+      const entry = repoStats.get(repoKey) ?? { commits: 0, files: 0, ins: 0, del: 0 }
+      entry.commits++
+      entry.files += c.files
+      entry.ins += c.insertions
+      entry.del += c.deletions
+      repoStats.set(repoKey, entry)
+    }
+  }
+
+  // Resolve repo display names
+  const repoName = (key: string): string => {
+    if (key === '__primary__') {
+      const match = jsonReport.repository.match(/^([A-Za-z0-9._-]+)\/([A-Za-z0-9._-]+)/)
+      return match ? match[2] : jsonReport.repository
+    }
+    const full = jsonReport.repositories?.[key]
+    if (full) {
+      const match = full.match(/^([A-Za-z0-9._-]+)\/([A-Za-z0-9._-]+)/)
+      return match ? match[2] : full
+    }
+    return key
+  }
+
+  // Sort by commit count descending
+  const sorted = [...repoStats.entries()].sort((a, b) => b[1].commits - a[1].commits)
+
+  if (sorted.length <= 1) return null
+
+  return (
+    <section className="doc-section eng-repo-breakdown-section">
+      <h2 className="section-title">{t('eng.repoBreakdown')}</h2>
+      <div className="eng-repo-grid">
+        {sorted.map(([key, stats], i) => {
+          const name = repoName(key)
+          const color = colored ? REPO_COLORS[i % REPO_COLORS.length] : '#666666'
+          return (
+            <div key={key} className="eng-repo-card" style={{ '--repo-color': color } as CSSProperties}>
+              <div className="eng-repo-card-header">
+                <span className="eng-repo-dot" style={{ background: color }} />
+                <span className="eng-repo-name">{name}</span>
+              </div>
+              <div className="eng-repo-card-stats">
+                <div className="eng-repo-stat">
+                  <span className="eng-repo-stat-value">{formatNum(stats.commits)}</span>
+                  <span className="eng-repo-stat-label">{t('eng.commits')}</span>
+                </div>
+                <div className="eng-repo-stat">
+                  <span className="eng-repo-stat-value">{formatNum(stats.files)}</span>
+                  <span className="eng-repo-stat-label">{t('eng.filesTouched')}</span>
+                </div>
+                <div className="eng-repo-stat">
+                  <span className="eng-repo-stat-value eng-repo-diff">
+                    <span className="eng-diff-sign eng-diff-ins">+</span>{formatNum(stats.ins)}
+                  </span>
+                  <span className="eng-repo-stat-label">{t('eng.col.ins')}</span>
+                </div>
+                <div className="eng-repo-stat">
+                  <span className="eng-repo-stat-value eng-repo-diff">
+                    <span className="eng-diff-sign eng-diff-del">-</span>{formatNum(stats.del)}
+                  </span>
+                  <span className="eng-repo-stat-label">{t('eng.col.del')}</span>
+                </div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </section>
+  )
+}
+
 // ── Merged day block: git days + time-only days in the same visual style ─────
+
+// Stable color palette for repo badges. Indexed by repo key hash.
+const REPO_COLORS = [
+  '#2563eb', '#7c3aed', '#059669', '#d97706',
+  '#dc2626', '#0891b2', '#db2777', '#65a30d',
+]
+
+function repoColor(key: string, colored: boolean): string {
+  if (!colored) return '#666666'
+  let hash = 0
+  for (let i = 0; i < key.length; i++) {
+    hash = ((hash << 5) - hash + key.charCodeAt(i)) | 0
+  }
+  return REPO_COLORS[Math.abs(hash) % REPO_COLORS.length]
+}
+
+function resolveRepoLabel(
+  repoKey: string | undefined,
+  jsonReport: EngReport | null,
+): string {
+  if (!repoKey || repoKey === '__primary__') {
+    if (!jsonReport) return ''
+    // Extract "owner/repo" from the start of the string, then take the repo part
+    const match = jsonReport.repository.match(/^([A-Za-z0-9._-]+)\/([A-Za-z0-9._-]+)/)
+    return match ? match[2] : jsonReport.repository
+  }
+  const full = jsonReport?.repositories?.[repoKey]
+  if (full) {
+    const match = full.match(/^([A-Za-z0-9._-]+)\/([A-Za-z0-9._-]+)/)
+    return match ? match[2] : full
+  }
+  return repoKey
+}
 
 function MergedDayBlock({
   day,
   t,
   commitBaseUrl,
   repoBaseUrlMap,
+  jsonReport,
+  colored,
 }: {
   day: MergedDay
   t: ReturnType<typeof useI18n>['t']
   commitBaseUrl: string | null
   repoBaseUrlMap: Map<string, string>
+  jsonReport: EngReport | null
+  colored: boolean
 }) {
   const hasJson = day.reportDay !== null
 
   if (hasJson) {
     const report = day.reportDay!
     const hasCommits = report.commitCount > 0
+
+    // Group commits by repo key
+    const repoGroups = new Map<string, typeof report.commits>()
+    for (const c of report.commits) {
+      const key = c.repo ?? '__primary__'
+      const group = repoGroups.get(key) ?? []
+      group.push(c)
+      repoGroups.set(key, group)
+    }
+    const sortedRepoKeys = [...repoGroups.keys()].sort((a, b) => {
+      // Primary repo first, then alphabetical
+      if (a === '__primary__') return -1
+      if (b === '__primary__') return 1
+      return a.localeCompare(b)
+    })
 
     return (
       <div className="eng-day-block">
@@ -383,43 +541,55 @@ function MergedDayBlock({
 
         {report.narrative && <p className="eng-day-narrative">{report.narrative}</p>}
 
-        {hasCommits && (
-          <table className="eng-commits-table">
-            <thead>
-              <tr>
-                <th className="eng-col-hash">{t('eng.col.hash')}</th>
-                <th className="eng-col-subject">{t('eng.col.subject')}</th>
-                <th className="eng-col-files">{t('eng.col.files')}</th>
-                <th className="eng-col-ins">{t('eng.col.ins')}</th>
-                <th className="eng-col-del">{t('eng.col.del')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {report.commits.map((c, i) => {
-                // Per-commit repo override wins; otherwise use the default.
-                const base = (c.repo && repoBaseUrlMap.get(c.repo)) || commitBaseUrl
-                const commitUrl = base ? base + c.hash : null
-                return (
-                  <tr key={`${day.dateKey}-${i}`}>
-                    <td className="eng-col-hash">
-                      {commitUrl ? (
-                        <a href={commitUrl} target="_blank" rel="noopener noreferrer" className="eng-commit-link">
-                          <code>{c.hash}</code>
-                        </a>
-                      ) : (
-                        <code>{c.hash}</code>
-                      )}
-                    </td>
-                    <td className="eng-col-subject">{c.subject}</td>
-                    <td className="eng-col-files">{formatNum(c.files)}</td>
-                    <td className="eng-col-ins"><span className="eng-diff-sign">+</span>{formatNum(c.insertions)}</td>
-                    <td className="eng-col-del"><span className="eng-diff-sign">−</span>{formatNum(c.deletions)}</td>
+        {hasCommits && sortedRepoKeys.map((repoKey) => {
+          const commits = repoGroups.get(repoKey)!
+          const label = resolveRepoLabel(repoKey, jsonReport)
+          const color = repoColor(repoKey, colored)
+          const base = (repoKey !== '__primary__' && repoBaseUrlMap.get(repoKey)) || commitBaseUrl
+
+          return (
+            <div key={repoKey} className="eng-repo-group" style={{ '--repo-color': color } as CSSProperties}>
+              <div className="eng-repo-group-header">
+                <span className="eng-repo-dot" style={{ background: color }} />
+                <span className="eng-repo-group-name">{label}</span>
+                <span className="eng-repo-group-count">{commits.length}</span>
+              </div>
+              <table className="eng-commits-table">
+                <thead>
+                  <tr>
+                    <th className="eng-col-hash">{t('eng.col.hash')}</th>
+                    <th className="eng-col-subject">{t('eng.col.subject')}</th>
+                    <th className="eng-col-files">{t('eng.col.files')}</th>
+                    <th className="eng-col-ins">{t('eng.col.ins')}</th>
+                    <th className="eng-col-del">{t('eng.col.del')}</th>
                   </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        )}
+                </thead>
+                <tbody>
+                  {commits.map((c, i) => {
+                    const commitUrl = base ? base + c.hash : null
+                    return (
+                      <tr key={`${day.dateKey}-${repoKey}-${i}`}>
+                        <td className="eng-col-hash">
+                          {commitUrl ? (
+                            <a href={commitUrl} target="_blank" rel="noopener noreferrer" className="eng-commit-link">
+                              <code>{c.hash}</code>
+                            </a>
+                          ) : (
+                            <code>{c.hash}</code>
+                          )}
+                        </td>
+                        <td className="eng-col-subject">{c.subject}</td>
+                        <td className="eng-col-files">{formatNum(c.files)}</td>
+                        <td className="eng-col-ins"><span className="eng-diff-sign">+</span>{formatNum(c.insertions)}</td>
+                        <td className="eng-col-del"><span className="eng-diff-sign">−</span>{formatNum(c.deletions)}</td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )
+        })}
 
         {report.commitCount > 0 && (
           <div className="eng-day-stats">

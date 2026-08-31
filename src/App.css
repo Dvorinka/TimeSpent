@@ -6,29 +6,43 @@
   transition: background 0.2s, color 0.2s;
 }
 
-/* ============ Language toggle ============ */
-.lang-toggle {
+/* ============ Bottom-right controls (theme + lang) ============ */
+.top-controls {
   position: fixed;
-  top: 16px;
+  bottom: 16px;
   right: 16px;
   z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.top-control-btn {
   background: var(--surface);
   border: 1px solid var(--line-strong);
   border-radius: 8px;
-  padding: 6px 12px;
+  padding: 7px 12px;
   font-size: 12px;
   font-weight: 700;
   color: var(--text-soft);
   cursor: pointer;
   font-family: inherit;
   letter-spacing: 0.05em;
-  transition: background 0.15s, border-color 0.15s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 
-.lang-toggle:hover {
+.top-control-btn:hover {
   background: var(--surface-2);
   border-color: var(--accent);
   color: var(--text);
+}
+
+.top-control-btn svg {
+  display: block;
 }
 
 /* ============ Dropzone ============ */
@@ -1662,6 +1676,13 @@
   color: #ffffff;
 }
 
+/* Grayscale milestone badge in full/simple mode */
+[data-style='full'] .eng-milestone-badge-on,
+[data-style='simple'] .eng-milestone-badge-on {
+  background: var(--text-soft);
+  color: var(--bg);
+}
+
 .eng-milestone-badge-off {
   background: var(--surface);
   color: var(--text-dim);
@@ -1878,6 +1899,164 @@
   color: #dc2626;
 }
 
+/* Grayscale diff signs in full mode */
+[data-style='full'] .eng-col-ins .eng-diff-sign {
+  color: var(--text-soft);
+}
+
+[data-style='full'] .eng-col-del .eng-diff-sign {
+  color: var(--text-muted);
+}
+
+/* Grayscale diff signs in simple mode */
+[data-style='simple'] .eng-col-ins .eng-diff-sign {
+  color: var(--text-soft);
+}
+
+[data-style='simple'] .eng-col-del .eng-diff-sign {
+  color: var(--text-muted);
+}
+
+/* Repo group within a day */
+.eng-repo-group {
+  margin-bottom: 12px;
+  border-left: 3px solid var(--repo-color, var(--accent));
+  border-radius: 0 6px 6px 0;
+  background: color-mix(in srgb, var(--repo-color, var(--accent)) 4%, transparent);
+  overflow: hidden;
+}
+
+.eng-repo-group:last-of-type {
+  margin-bottom: 8px;
+}
+
+.eng-repo-group-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  background: color-mix(in srgb, var(--repo-color, var(--accent)) 8%, var(--surface));
+}
+
+.eng-repo-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.eng-repo-group-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-soft);
+  letter-spacing: -0.01em;
+}
+
+.eng-repo-group-count {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-dim);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 1px 7px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Commit table inside repo group */
+.eng-repo-group .eng-commits-table {
+  margin-bottom: 0;
+  border-radius: 0;
+}
+
+/* Repo breakdown cards */
+.eng-repo-breakdown-section {
+  break-inside: avoid;
+  margin-bottom: 28px;
+}
+
+.eng-repo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+.eng-repo-card {
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border-top: 3px solid var(--repo-color, var(--accent));
+  break-inside: avoid;
+}
+
+.eng-repo-card-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.eng-repo-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eng-repo-card-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 12px;
+}
+
+.eng-repo-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.eng-repo-stat-value {
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.eng-repo-stat-label {
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+}
+
+.eng-repo-diff {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.eng-diff-ins {
+  color: #16a34a;
+}
+
+.eng-diff-del {
+  color: #dc2626;
+}
+
+/* Grayscale diff in full/simple mode */
+[data-style='full'] .eng-diff-ins,
+[data-style='simple'] .eng-diff-ins {
+  color: var(--text-soft);
+}
+
+[data-style='full'] .eng-diff-del,
+[data-style='simple'] .eng-diff-del {
+  color: var(--text-muted);
+}
+
 /* Day stats footer */
 .eng-day-stats {
   display: flex;
@@ -2032,6 +2211,9 @@
   .eng-col-subject {
     word-break: break-word;
   }
+  .eng-repo-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Print adjustments for engineering report */
@@ -2109,6 +2291,37 @@
   .eng-day-stats {
     font-size: 8pt;
   }
+  .eng-repo-group {
+    margin-bottom: 8pt;
+    border-radius: 0 4pt 4pt 0;
+  }
+  .eng-repo-group-header {
+    padding: 4pt 8pt;
+  }
+  .eng-repo-group-name {
+    font-size: 9pt;
+  }
+  .eng-repo-group-count {
+    font-size: 7pt;
+    padding: 1pt 5pt;
+  }
+  .eng-repo-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120pt, 1fr));
+    gap: 6pt;
+  }
+  .eng-repo-card {
+    border-radius: 6pt;
+    padding: 8pt 10pt;
+  }
+  .eng-repo-name {
+    font-size: 9pt;
+  }
+  .eng-repo-stat-value {
+    font-size: 11pt;
+  }
+  .eng-repo-stat-label {
+    font-size: 6pt;
+  }
   .eng-next-goals {
     padding: 10pt 12pt;
     margin-bottom: 16pt;
@@ -2135,5 +2348,146 @@
     --accent: #000000;
     --accent-contrast: #ffffff;
   }
+}
+
+/* ============ Colored style overrides ============ */
+/* Builds on top of full mode, adds color accents and visual richness */
+
+[data-style='colored'] .eng-summary-band {
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+[data-style='colored'] .eng-summary-band-main {
+  background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 70%, #000));
+}
+
+[data-style='colored'] .eng-summary-split-item {
+  background: color-mix(in srgb, var(--accent) 4%, var(--surface));
+}
+
+[data-style='colored'] .eng-summary-split-item + .eng-summary-split-item {
+  border-left-color: color-mix(in srgb, var(--accent) 20%, var(--line-strong));
+}
+
+[data-style='colored'] .eng-summary-split-dur {
+  color: var(--accent);
+}
+
+/* Section titles with accent underline */
+[data-style='colored'] .section-title {
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 4px;
+}
+
+/* Repo cards with colored top border and subtle tint */
+[data-style='colored'] .eng-repo-card {
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--repo-color) 12%, transparent);
+  background: color-mix(in srgb, var(--repo-color) 3%, var(--surface));
+}
+
+[data-style='colored'] .eng-repo-card-header {
+  border-bottom: 1px solid color-mix(in srgb, var(--repo-color) 15%, var(--line));
+}
+
+[data-style='colored'] .eng-repo-name {
+  color: var(--repo-color);
+}
+
+/* Repo group headers with colored tint */
+[data-style='colored'] .eng-repo-group {
+  background: color-mix(in srgb, var(--repo-color) 5%, transparent);
+}
+
+[data-style='colored'] .eng-repo-group-header {
+  background: color-mix(in srgb, var(--repo-color) 10%, var(--surface));
+}
+
+[data-style='colored'] .eng-repo-group-name {
+  color: var(--repo-color);
+  font-weight: 700;
+}
+
+/* Colored diff signs */
+[data-style='colored'] .eng-col-ins .eng-diff-sign {
+  color: #16a34a;
+}
+
+[data-style='colored'] .eng-col-del .eng-diff-sign {
+  color: #dc2626;
+}
+
+[data-style='colored'] .eng-diff-ins {
+  color: #16a34a;
+}
+
+[data-style='colored'] .eng-diff-del {
+  color: #dc2626;
+}
+
+/* Colored milestone badges */
+[data-style='colored'] .eng-milestone-badge-on {
+  background: #22c55e;
+  color: #ffffff;
+}
+
+/* Colored day headers with accent dot */
+[data-style='colored'] .eng-day-date::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+/* Colored day tags */
+[data-style='colored'] .eng-day-tag {
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, var(--line));
+}
+
+/* Colored doc header rule */
+[data-style='colored'] .doc-rule {
+  background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 30%, var(--line)));
+  height: 3px;
+}
+
+/* Colored milestone status badges */
+[data-style='colored'] .eng-milestone-status {
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--line));
+}
+
+/* Colored commit hash links */
+[data-style='colored'] .eng-commits-table a {
+  color: var(--accent);
+}
+
+[data-style='colored'] .eng-commits-table a:hover {
+  text-decoration: underline;
+}
+
+/* Invoice colored overrides */
+[data-style='colored'] .totals-band-main {
+  background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 70%, #000));
+}
+
+[data-style='colored'] .task-total-bar {
+  background: var(--accent);
+}
+
+[data-style='colored'] .tag-pill {
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, var(--line));
+}
+
+[data-style='colored'] .section-title {
+  color: var(--accent);
 }
 

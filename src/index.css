@@ -47,6 +47,39 @@
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
+/* Colored style overrides — builds on top of full, adds color accents */
+[data-style='colored'][data-theme='light'] {
+  --accent: #2563eb;
+  --accent-contrast: #ffffff;
+  --bar-fill: #2563eb;
+  --bar-track: #dbeafe;
+  --pill-onsite-bg: #2563eb;
+  --pill-onsite-fg: #ffffff;
+  --pill-remote-bg: #eff6ff;
+  --pill-remote-fg: #2563eb;
+  --pill-remote-border: #93c5fd;
+  --surface: #f8fafc;
+  --surface-2: #f1f5f9;
+  --line: #e2e8f0;
+  --line-strong: #cbd5e1;
+}
+
+[data-style='colored'][data-theme='dark'] {
+  --accent: #3b82f6;
+  --accent-contrast: #ffffff;
+  --bar-fill: #3b82f6;
+  --bar-track: #1e3a5f;
+  --pill-onsite-bg: #3b82f6;
+  --pill-onsite-fg: #ffffff;
+  --pill-remote-bg: #1e293b;
+  --pill-remote-fg: #93c5fd;
+  --pill-remote-border: #1e3a5f;
+  --surface: #1a1f2e;
+  --surface-2: #1e2536;
+  --line: #2a3548;
+  --line-strong: #3a4a63;
+}
+
 :root {
   --font-primary: 'Open Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-secondary: 'Noto Sans', system-ui, sans-serif;

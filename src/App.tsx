@@ -19,7 +19,7 @@ import { useI18n } from './i18n'
 
 type Theme = 'light' | 'dark'
 type PeriodMode = 'file' | 'month'
-type StyleMode = 'full' | 'simple'
+type StyleMode = 'full' | 'colored' | 'simple'
 type DocType = 'invoice' | 'engineering'
 
 function readImageAsDataUrl(file: File): Promise<string> {
@@ -244,15 +244,41 @@ export default function App() {
 
   return (
     <div className="app" data-theme={effectiveTheme}>
-      {/* Language toggle — always visible */}
-      <button
-        className="lang-toggle no-print"
-        onClick={toggleLang}
-        title={t('lang.toggle')}
-        aria-label={t('lang.toggle')}
-      >
-        {lang.toUpperCase()}
-      </button>
+      {/* Fixed top-right controls — always visible */}
+      <div className="top-controls no-print">
+        <button
+          className="top-control-btn"
+          onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+          title={effectiveTheme === 'light' ? t('toolbar.dark') : t('toolbar.light')}
+          aria-label={t('toolbar.theme')}
+        >
+          {effectiveTheme === 'light' ? (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+          ) : (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="5" />
+              <line x1="12" y1="1" x2="12" y2="3" />
+              <line x1="12" y1="21" x2="12" y2="23" />
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+              <line x1="1" y1="12" x2="3" y2="12" />
+              <line x1="21" y1="12" x2="23" y2="12" />
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+            </svg>
+          )}
+        </button>
+        <button
+          className="top-control-btn"
+          onClick={toggleLang}
+          title={t('lang.toggle')}
+          aria-label={t('lang.toggle')}
+        >
+          {lang.toUpperCase()}
+        </button>
+      </div>
 
       {!report && (
         <div className="dropzone-wrap">
@@ -427,6 +453,19 @@ export default function App() {
                     <small>{t('config.style.fullDesc')}</small>
                   </span>
                 </label>
+                <label className={`config-radio ${styleMode === 'colored' ? 'is-active' : ''}`}>
+                  <input
+                    type="radio"
+                    name="style"
+                    value="colored"
+                    checked={styleMode === 'colored'}
+                    onChange={() => setStyleMode('colored')}
+                  />
+                  <span className="config-radio-text">
+                    <strong>{t('config.style.colored')}</strong>
+                    <small>{t('config.style.coloredDesc')}</small>
+                  </span>
+                </label>
                 <label className={`config-radio ${styleMode === 'simple' ? 'is-active' : ''}`}>
                   <input
                     type="radio"
@@ -508,42 +547,29 @@ export default function App() {
                 </button>
               )}
 
-              {docType === 'invoice' && styleMode === 'full' && (
-                <div className="theme-toggle" role="group" aria-label={t('toolbar.theme')}>
-                  <button
-                    className={theme === 'light' ? 'is-active' : ''}
-                    onClick={() => setTheme('light')}
-                    title={t('toolbar.light')}
-                  >
-                    {t('toolbar.light')}
-                  </button>
-                  <button
-                    className={theme === 'dark' ? 'is-active' : ''}
-                    onClick={() => setTheme('dark')}
-                    title={t('toolbar.dark')}
-                  >
-                    {t('toolbar.dark')}
-                  </button>
-                </div>
-              )}
-              {docType === 'invoice' && (
-                <div className="style-toggle" role="group" aria-label={t('toolbar.style')}>
-                  <button
-                    className={styleMode === 'full' ? 'is-active' : ''}
-                    onClick={() => setStyleMode('full')}
-                    title={t('toolbar.full')}
-                  >
-                    {t('toolbar.full')}
-                  </button>
-                  <button
-                    className={styleMode === 'simple' ? 'is-active' : ''}
-                    onClick={() => setStyleMode('simple')}
-                    title={t('toolbar.simple')}
-                  >
-                    {t('toolbar.simple')}
-                  </button>
-                </div>
-              )}
+              <div className="style-toggle" role="group" aria-label={t('toolbar.style')}>
+                <button
+                  className={styleMode === 'full' ? 'is-active' : ''}
+                  onClick={() => setStyleMode('full')}
+                  title={t('toolbar.full')}
+                >
+                  {t('toolbar.full')}
+                </button>
+                <button
+                  className={styleMode === 'colored' ? 'is-active' : ''}
+                  onClick={() => setStyleMode('colored')}
+                  title={t('toolbar.colored')}
+                >
+                  {t('toolbar.colored')}
+                </button>
+                <button
+                  className={styleMode === 'simple' ? 'is-active' : ''}
+                  onClick={() => setStyleMode('simple')}
+                  title={t('toolbar.simple')}
+                >
+                  {t('toolbar.simple')}
+                </button>
+              </div>
               <button
                 className="btn-ghost"
                 onClick={() => logoInputRef.current?.click()}
@@ -613,6 +639,7 @@ export default function App() {
                 csvReport={report}
                 jsonReport={jsonReport}
                 theme={effectiveTheme}
+                styleMode={styleMode}
                 logoUrl={logoUrl}
                 signatureUrl={signatureUrl}
                 referenceNumber={referenceNumber}

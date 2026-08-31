@@ -10,7 +10,7 @@ import { useI18n, type Lang } from './i18n'
 
 type Theme = 'light' | 'dark'
 type PeriodMode = 'file' | 'month'
-type StyleMode = 'full' | 'simple'
+type StyleMode = 'full' | 'colored' | 'simple'
 
 export function Report({
   report,

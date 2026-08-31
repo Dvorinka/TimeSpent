@@ -56,6 +56,9 @@ export const translations = {
     'config.style.full': 'Full',
     'config.style.fullDesc':
       'Visual bars, colored pill tags, light/dark theme',
+    'config.style.colored': 'Colored',
+    'config.style.coloredDesc':
+      'Full color with repo accents, light/dark theme',
     'config.style.simple': 'Simple',
     'config.style.simpleDesc':
       'Ink-saving, white-only, no bars, clean invoice style',
@@ -73,6 +76,7 @@ export const translations = {
     'toolbar.dark': 'Dark',
     'toolbar.style': 'Style',
     'toolbar.full': 'Full',
+    'toolbar.colored': 'Colored',
     'toolbar.simple': 'Simple',
     'toolbar.logo': 'Logo',
     'toolbar.logoTitle': 'Upload custom logo',
@@ -140,6 +144,8 @@ export const translations = {
     'eng.col.files': 'Files',
     'eng.col.ins': 'Ins',
     'eng.col.del': 'Del',
+    'eng.tagsReleased': 'Tags released',
+    'eng.repoBreakdown': 'Repositories',
     'eng.status.achieved': 'Achieved',
     'eng.status.in-progress': 'In progress',
     'eng.status.blocked': 'Blocked',
@@ -189,7 +195,10 @@ export const translations = {
     'config.style': 'Styl',
     'config.style.full': 'Plný',
     'config.style.fullDesc':
-      'Vizuální prvky, barevné štítky, světlý/tmavý vzhled',
+      'Vizuální prvky, štítky, světlý/tmavý vzhled (odstíny šedi)',
+    'config.style.colored': 'Barevný',
+    'config.style.coloredDesc':
+      'Plný barevný vzhled s akcenty repozitářů, světlý/tmavý motiv',
     'config.style.simple': 'Jednoduchý',
     'config.style.simpleDesc':
       'Úsporný tisk, pouze bílé pozadí, bez vizuálních prvků, čistý fakturový styl',
@@ -207,6 +216,7 @@ export const translations = {
     'toolbar.dark': 'Tmavý',
     'toolbar.style': 'Styl',
     'toolbar.full': 'Plný',
+    'toolbar.colored': 'Barevný',
     'toolbar.simple': 'Jednoduchý',
     'toolbar.logo': 'Logo',
     'toolbar.logoTitle': 'Nahrát vlastní logo',
@@ -271,6 +281,8 @@ export const translations = {
     'eng.col.files': 'Soubory',
     'eng.col.ins': '+',
     'eng.col.del': '-',
+    'eng.tagsReleased': 'Vydaných tagů',
+    'eng.repoBreakdown': 'Repozitáře',
     'eng.status.achieved': 'Dosaženo',
     'eng.status.in-progress': 'V průběhu',
     'eng.status.blocked': 'Blokováno',

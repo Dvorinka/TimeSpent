@@ -33,3 +33,12 @@ docs/july-*.md
 
 # Playwright MCP artifacts
 .playwright-mcp/
+.playwright-cli/
+
+# Jujutsu
+.jj/
+
+# Docs: ignore everything except examples
+docs/*
+!docs/example-engineering-report.json
+!docs/example-time-entries.csv
